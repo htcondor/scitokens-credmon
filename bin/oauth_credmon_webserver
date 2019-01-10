@@ -1,0 +1,15 @@
+#!/usr/bin/python
+
+from credmon.utils import setup_logging, get_cred_dir
+import os
+import logging
+
+cred_dir = get_cred_dir()
+logger = setup_logging(log_path = os.path.join(cred_dir, 'oauth_credmon_webserver.log'),
+                           log_level = logging.DEBUG)
+
+if __name__ == '__main__':
+    # todo: read flask config from file
+    from credmon.CredentialMonitors.OAuthCredmonWebserver import app
+    app.secret_key = 'CHANGE THIS IN YOUR IMPLEMENTATION'
+    app.run(use_reloader=False, port=8080, debug=True)

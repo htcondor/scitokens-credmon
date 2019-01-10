@@ -1,0 +1,2 @@
+recursive-include credmon/CredentialMonitors/OAuthCredmonWebserver/static *
+recursive-include credmon/CredentialMonitors/OAuthCredmonWebserver/templates *
