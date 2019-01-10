@@ -38,7 +38,7 @@ class OAuthCredmon(AbstractCredentialMonitor):
             self.log.warning("The format of the metadata file %s is invalid", metadata_path)
         else:
             if 'use_refresh_token' in token_metadata:
-                if token_metadata['has_refresh_token'] == False:
+                if token_metadata['use_refresh_token'] == False:
                     return False
 
         # get token half-life
