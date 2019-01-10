@@ -42,8 +42,8 @@ class OAuthCredmon(AbstractCredentialMonitor):
                     return False
 
         # get token half-life
-        create_time = os.path.getctime(access_file)
-        refresh_time = start_time + float(token['expires_in'])/2
+        create_time = os.path.getctime(access_token_path)
+        refresh_time = create_time + float(access_token['expires_in'])/2
 
         # check if token is past its half-life
         if time.time() > refresh_time:
