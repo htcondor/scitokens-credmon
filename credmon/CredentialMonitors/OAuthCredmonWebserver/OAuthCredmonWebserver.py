@@ -107,7 +107,8 @@ def key(key):
 
         # the local username is global to the session, just grab it from the last classad
         session['local_username'] = provider_ad['LocalUser']
-
+        
+    print('New session started for user {0}'.format(session['local_username']))
     return render_template('index.html')
 
 @app.route('/login/<provider>')
@@ -165,7 +166,6 @@ def oauth_return(provider):
     # gather information from the key file classad
     client_id = provider_ad['ClientId']
     redirect_uri = provider_ad['ReturnUrl']
-    print('session = {0}'.format(session))
     state = session['providers'][provider]['state']
     oauth = OAuth2Session(client_id, state=state, redirect_uri=redirect_uri)
     
