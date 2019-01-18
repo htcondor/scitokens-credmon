@@ -2,6 +2,7 @@ import sys
 from flask import Flask, request, redirect, render_template, session
 from requests_oauthlib import OAuth2Session
 import os
+import pickle
 import tempfile
 from credmon.utils import atomic_rename, get_cred_dir
 import classad
@@ -35,8 +36,8 @@ app = Flask(__name__)
 # make sure the secret_key is randomized in case user fails to override before calling app.run()
 app.secret_key = os.urandom(24)
 
-def get_provider_str(provider):
-    return '_'.join(provider).rstrip('_')
+def get_provider_str(provider, handle):
+    return ' '.join((provider, handle)).rstrip(' ')
 
 def get_provider_ad(provider, key_path):
     '''
@@ -48,8 +49,9 @@ def get_provider_ad(provider, key_path):
         raise Exception("Key file {0} doesn't exist".format(key_path))
 
     with open(key_path, 'r') as key_file:
-        for provider_ad in classad.parseAds(key_file):
-            if (provider_ad['Provider'], provider_ad.get('Handle', '')) == provider:
+        for ad in classad.parseAds(key_file):
+            ad_provider = get_provider_str(ad['Provider'], ad.get('Handle', ''))
+            if ad_provider == provider:
                 break
         else:
             raise Exception("Provider {0} not in key file {1}".format(provider, key_path))
@@ -100,7 +102,7 @@ def key(key):
         
         # initialize data for each token provider
         for provider_ad in classad.parseAds(key_file):
-            provider = (provider_ad['Provider'], provider_ad.get('Handle', ''))
+            provider = get_provider_str(provider_ad['Provider'], provider_ad.get('Handle', ''))
             session['providers'][provider] = {}
             session['providers'][provider]['logged_in'] = False
             if 'Scopes' in provider_ad:
@@ -166,7 +168,7 @@ def oauth_return(provider):
     """
 
     # get the provider name from the outgoing_provider set in oauth_login()
-    provider = session.pop('outgoing_provider', (provider, ''))
+    provider = session.pop('outgoing_provider', get_provider_str(provider, ''))
     if not (provider in session['providers']):
         raise Exception("Provider {0} not in list of providers".format(provider))
 
@@ -234,9 +236,9 @@ def oauth_return(provider):
     user_cred_dir = os.path.join(cred_dir, session['local_username'])
     if not os.path.isdir(user_cred_dir):
         os.makedirs(user_cred_dir)
-    refresh_token_path = os.path.join(user_cred_dir, get_provider_str(provider) + '.top')
-    access_token_path = os.path.join(user_cred_dir, get_provider_str(provider) + '.use')
-    metadata_path = os.path.join(user_cred_dir, get_provider_str(provider) + '.meta')
+    refresh_token_path = os.path.join(user_cred_dir, provider.replace(' ', '_') + '.top')
+    access_token_path = os.path.join(user_cred_dir, provider.replace(' ', '_') + '.use')
+    metadata_path = os.path.join(user_cred_dir, provider.replace(' ', '_') + '.meta')
 
     # write tokens to tmp files          
     (tmp_fd, tmp_access_token_path) = tempfile.mkstemp(dir = user_cred_dir)
