@@ -14,7 +14,7 @@
 </div>
 
 <div class="container">
-  {% for provider in session['providers'] %}
+  {% for provider in session['providers']|sort %}
   <div class="row">
     <div class="col-12">
       <div class="card" style="width: 20rem;">
