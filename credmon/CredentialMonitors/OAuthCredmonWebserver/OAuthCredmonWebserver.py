@@ -2,7 +2,6 @@ import sys
 from flask import Flask, request, redirect, render_template, session
 from requests_oauthlib import OAuth2Session
 import os
-import pickle
 import tempfile
 from credmon.utils import atomic_rename, get_cred_dir
 import classad
