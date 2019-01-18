@@ -56,7 +56,7 @@ def get_provider_ad(provider, key_path):
         else:
             raise Exception("Provider {0} not in key file {1}".format(provider, key_path))
 
-    return provider_ad
+    return ad
 
 
 @app.before_request
