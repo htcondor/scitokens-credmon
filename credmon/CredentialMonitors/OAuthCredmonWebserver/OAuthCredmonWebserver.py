@@ -148,6 +148,11 @@ def oauth_login(provider):
     providers_dict = session['providers']
     providers_dict[provider]['state'] = state
     session['providers'] = providers_dict
+
+    # store the provider name since it could be different than the provider
+    # argument to oauth_return() (e.g. if getting multiple tokens from the
+    # same OAuth endpoint)
+    session['outgoing_provider'] = provider
     
     return redirect(authorization_url)
 
@@ -157,8 +162,10 @@ def oauth_return(provider):
     Returning from OAuth provider
     """
 
+    # get the provider name from the outgoing_provider set in oauth_login()
+    provider = session.pop('outgoing_provider', provider)
     if not (provider in session['providers']):
-        raise Exception("Provider not in list of providers")
+        raise Exception("Provider {0} not in list of providers".format(provider))
 
     provider_ad = get_provider_ad(provider, session['key_path'])
 
