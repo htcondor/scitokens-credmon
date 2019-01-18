@@ -35,6 +35,9 @@ app = Flask(__name__)
 # make sure the secret_key is randomized in case user fails to override before calling app.run()
 app.secret_key = os.urandom(24)
 
+def get_provider_str(provider):
+    return '_'.join(provider).rstrip('_')
+
 def get_provider_ad(provider, key_path):
     '''
     Returns the ClassAd for a given OAuth provider given 
@@ -46,7 +49,7 @@ def get_provider_ad(provider, key_path):
 
     with open(key_path, 'r') as key_file:
         for provider_ad in classad.parseAds(key_file):
-            if provider_ad['Provider'] == provider:
+            if (provider_ad['Provider'], provider_ad.get('Handle', '')) == provider:
                 break
         else:
             raise Exception("Provider {0} not in key file {1}".format(provider, key_path))
@@ -95,9 +98,9 @@ def key(key):
         # store the path to the key file since it will be accessed later in the session
         session['key_path'] = key_path
         
-        # initialize data for each provider
+        # initialize data for each token provider
         for provider_ad in classad.parseAds(key_file):
-            provider = provider_ad['Provider']
+            provider = (provider_ad['Provider'], provider_ad.get('Handle', ''))
             session['providers'][provider] = {}
             session['providers'][provider]['logged_in'] = False
             if 'Scopes' in provider_ad:
@@ -163,7 +166,7 @@ def oauth_return(provider):
     """
 
     # get the provider name from the outgoing_provider set in oauth_login()
-    provider = session.pop('outgoing_provider', provider)
+    provider = session.pop('outgoing_provider', (provider, ''))
     if not (provider in session['providers']):
         raise Exception("Provider {0} not in list of providers".format(provider))
 
@@ -231,9 +234,9 @@ def oauth_return(provider):
     user_cred_dir = os.path.join(cred_dir, session['local_username'])
     if not os.path.isdir(user_cred_dir):
         os.makedirs(user_cred_dir)
-    refresh_token_path = os.path.join(user_cred_dir, provider + '.top')
-    access_token_path = os.path.join(user_cred_dir, provider + '.use')
-    metadata_path = os.path.join(user_cred_dir, provider + '.meta')
+    refresh_token_path = os.path.join(user_cred_dir, get_provider_str(provider) + '.top')
+    access_token_path = os.path.join(user_cred_dir, get_provider_str(provider) + '.use')
+    metadata_path = os.path.join(user_cred_dir, get_provider_str(provider) + '.meta')
 
     # write tokens to tmp files          
     (tmp_fd, tmp_access_token_path) = tempfile.mkstemp(dir = user_cred_dir)

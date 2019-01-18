@@ -19,7 +19,7 @@
     <div class="col-12">
       <div class="card" style="width: 20rem;">
         <div class="card-body">
-          <h4 class="card-title">{{ provider }} Login</h4>
+          <h4 class="card-title">{{ ' '.join(provider) }} Login</h4>
           {% if session['providers'][provider]['logged_in'] == True %}
           Logged in as: {{ session['providers'][provider]['username'] }}
           {% else %}
