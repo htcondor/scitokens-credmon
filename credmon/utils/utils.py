@@ -67,12 +67,13 @@ def get_cred_dir(cred_dir = None):
 
     # Create the credential directory if it doesn't exist
     if not os.path.exists(cred_dir):
-        os.makedirs(cred_dir, (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR))
+        os.makedirs(cred_dir,
+                        (stat.S_ISGID | stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP))
 
     # Make sure the permissions on the credential directory are correct
     try:
-        if (os.stat(cred_dir).st_mode & (stat.S_IRGRP | stat.S_IROTH | stat.S_IWGRP | stat.S_IWOTH | stat.S_IXGRP | stat.S_IXOTH)):
-            os.chmod(cred_dir, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+        if (os.stat(cred_dir).st_mode & (stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH)):
+            raise RuntimeError('The credential directory is readable and/or writable by others.')
     except OSError:
         raise RuntimeError('The credmon cannot verify the permissions of the credential directory.')
     if not os.access(cred_dir, (os.R_OK | os.W_OK | os.X_OK)):
@@ -124,6 +125,5 @@ def atomic_rename(tmp_file, target_file):
     """
     
     os.chmod(tmp_file, stat.S_IRUSR)
-    #os.chown(tmp_file, 0, 0)
     os.rename(tmp_file, target_file)
 
