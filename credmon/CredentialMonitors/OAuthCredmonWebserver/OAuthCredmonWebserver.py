@@ -1,13 +1,20 @@
 import sys
-from flask import Flask, request, redirect, render_template, session
+from flask import Flask, request, redirect, render_template, session, url_for, jsonify
 from requests_oauthlib import OAuth2Session
 import os
 import tempfile
 from credmon.utils import atomic_rename, get_cred_dir
+import htcondor
 import classad
 import json
 import re
 import logging
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
+
+from scitokens.utils import string_from_long
 
 logger = logging.getLogger('OAuthCredmonWebserver')
 
@@ -73,6 +80,54 @@ def before_request():
     #    code = 301
     #    return redirect(url, code=code)
 
+@app.route('/.well-known/jwks-uri')
+def jwks_uri():
+
+    public_keyfile = htcondor.param.get("LOCAL_CREDMON_PUBLIC_KEY", "/etc/condor/scitokens.pem")
+    kid = htcondor.param.get("LOCAL_CREDMON_KEY_ID", "local")
+
+    with open(public_keyfile, 'rb') as key_file:
+            public_key = serialization.load_pem_public_key(
+                key_file.read(),
+                backend=default_backend()
+            )
+
+    public_numbers = public_key.public_numbers()
+
+    # This is a elliptic curve...
+    if hasattr(public_numbers, 'x'):
+
+        jwk_public_key = {'keys': [
+                {
+                    "crv": "P-256",
+                    "x": string_from_long(public_numbers.x),
+                    "y": string_from_long(public_numbers.y),
+                    "kty": "EC",
+                    "use": "sig",
+                    "kid": kid.decode('utf-8')
+                }
+            ]}
+    else:
+
+        jwk_public_key = {'keys': [
+                {
+                    "alg": "RS256",
+                    "n": string_from_long(public_numbers.n),
+                    "e": string_from_long(public_numbers.e),
+                    "kty": "RSA",
+                    "use": "sig",
+                    "kid": kid.decode('utf-8')
+                }
+            ]}
+
+
+    return jsonify(jwk_public_key)
+
+@app.route('/.well-known/openid-configuration')
+def openid_configuration():
+    return jsonify({"issuer": url_for("index", _external=True),
+                    "jwks_uri": url_for("jwks_uri", _external=True)
+                   })
 
 @app.route('/')
 def index():
