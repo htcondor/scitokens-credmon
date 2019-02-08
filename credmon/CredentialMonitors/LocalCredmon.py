@@ -24,7 +24,7 @@ class LocalCredmon(OAuthCredmon):
         self.authz_template = "read:/user/{username} write:/user/{username}"
         self.token_lifetime = 60*20
         if htcondor != None:
-            self._private_key_location = htcondor.param.get('LOCAL_CREDMON_PRIVATE_KEY', None)
+            self._private_key_location = htcondor.param.get('LOCAL_CREDMON_PRIVATE_KEY', "/etc/condor/scitokens-private.pem")
             if self._private_key_location != None and os.path.exists(self._private_key_location):
                 with open(self._private_key_location, 'r') as private_key:
                     self._private_key = private_key.read()
