@@ -51,7 +51,7 @@ def create_credentials():
 
     try:
         fd = os.open(private_keyfile, os.O_CREAT | os.O_EXCL, 0o700)
-    except Exception as exc:
+    except Exception:
         logger.info("Using existing credential at %s for local signer", private_keyfile)
         return
 
@@ -228,3 +228,39 @@ def atomic_output_json(output_object, output_fname):
             os.unlink(tmp_file_name)
         except OSError:
             pass
+
+def generate_secret_key():
+    """
+    Return a secret key that is common across all sessions
+    """
+    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+    if not htcondor:
+        logger.warning("HTCondor module is missing will use a non-persistent WSGI session key")
+        return os.urandom(16)
+
+    keyfile = os.path.join(htcondor.param.get("SEC_CREDENTIAL_DIRECTORY", "/var/lib/condor/credential"), "wsgi_session_key")
+
+    try:
+        fd = os.open(keyfile, os.O_CREAT | os.O_RDWR, 0o600)
+        current_key = os.read(fd, 24)
+    except Exception:
+        logger.warning("Unable to access WSGI session key; will use a non-persistent key")
+        return os.urandom(16)
+
+    if len(current_key) >= 16:
+        logger.debug("Using the persistent WSGI session key")
+        return current_key
+
+    # We are responsible for generating the keyfile for this webapp to use.
+    new_key = os.urandom(24)
+    try:
+        atomic_output(new_key, keyfile)
+        logger.info("Successfully creeated a new persistent WSGI session key for scitokens-credmon application %s")
+    except:
+        logger.exception("Failed to atomically create a new persistent WSGI session key; will use a transient one.")
+        os.unlink(keyfile)
+        return new_key
+    finally:
+        os.close(fd)
+    return new_key
