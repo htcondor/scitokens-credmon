@@ -1,15 +1,88 @@
 import os
-import stat
 import logging
 import logging.handlers
+import stat
 import sys
+import tempfile
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import ec
 
 try:
     import htcondor
 except ImportError:
     htcondor = None
 
-    
+def atomic_output(file_contents, output_fname, mode=stat.S_IRUSR):
+    """
+    Given file bytes and a destination filename, write to the
+    destination in an atomic and durable manner.
+    """
+    dir_name, file_name = os.path.split(output_fname)
+
+    tmp_fd, tmp_file_name = tempfile.mkstemp(dir = dir_name, prefix=file_name)
+    try:
+        with os.fdopen(tmp_fd, 'w') as fp:
+            fp.write(file_contents)
+
+        # atomically move new tokens in place
+        atomic_rename(tmp_file_name, output_fname)
+
+    finally:
+        try:
+            os.unlink(tmp_file_name)
+        except OSError:
+            pass
+
+
+def create_credentials():
+    """
+    Auto-create the credentials for the condor_credmon; if there are already
+    credentials present, leave them alone.
+    """
+    if not htcondor:
+        return
+    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+    private_keyfile = htcondor.param.get("LOCAL_CREDMON_PRIVATE_KEY", "/etc/condor/scitokens-private.pem")
+    public_keyfile = htcondor.param.get("LOCAL_CREDMON_PUBLIC_KEY", "/etc/condor/scitokens.pem")
+
+    try:
+        fd = os.open(private_keyfile, os.O_CREAT | os.O_EXCL, 0700)
+    except Exception as exc:
+        logger.info("Using existing credential at %s for local signer", private_keyfile)
+        return
+
+    # We are the exclusive owner of the private keyfile; we must either
+    # succeed or fail and delete the keyfile.
+    try:
+        private_key = ec.generate_private_key(
+            ec.SECP256R1(),
+            backend=default_backend()
+        )
+        public_key = private_key.public_key()
+
+        private_pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+        atomic_output(private_pem, private_keyfile)
+
+        public_pem = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        atomic_output(public_pem, public_keyfile, mode=0644)
+        logger.info("Successfully creeated a new credential for local credmon at %s", private_keyfile)
+    except:
+        logger.exception("Failed to create a default private/public keypair; local credmon functionality may not work.")
+        os.unlink(private_keyfile)
+        raise
+    finally:
+        os.close(fd)
+
 def setup_logging(log_path = None, log_level = None):
     '''
     Detects the path and level for the log file from the condor_config and sets 
@@ -111,7 +184,7 @@ def credmon_complete(cred_dir):
         os.utime(complete_name, None)
     return
 
-def atomic_rename(tmp_file, target_file):
+def atomic_rename(tmp_file, target_file, mode=stat.S_IRUSR):
     """
     If successful HTCondor will only be dealing with fully prepared and
     usable credential cache files.
@@ -124,6 +197,6 @@ def atomic_rename(tmp_file, target_file):
     :rtype: bool
     """
     
-    os.chmod(tmp_file, stat.S_IRUSR)
+    os.chmod(tmp_file, mode)
     os.rename(tmp_file, target_file)
 

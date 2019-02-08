@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from credmon import OAuthCredmon
-from credmon.utils import setup_logging, get_cred_dir, drop_pid, credmon_incomplete, credmon_complete
+from credmon.utils import setup_logging, get_cred_dir, drop_pid, credmon_incomplete, credmon_complete, create_credentials
 import signal
 import sys
 from functools import partial
@@ -28,6 +28,9 @@ def main():
     cred_dir = get_cred_dir()    
     logger = setup_logging()
     logger.info('Starting condor_credmon and registering signals')
+
+    # Try to create the signing credentials for the local credmon.
+    create_credentials()
 
     # catch signals
     signal.signal(signal.SIGHUP, partial(signal_handler, logger))
