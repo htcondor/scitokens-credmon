@@ -64,6 +64,7 @@ def get_provider_ad(provider, key_path):
                 raise Exception("Provider {0} not in key file {1}".format(provider, key_path))
     except IOError as ie:
         print("Failed to open key file {0}: {1}".format(key_path, str(ie)))
+        raise
 
     return ad
 
