@@ -99,8 +99,6 @@ SEC_CREDENTIAL_PRODUCER = /var/lib/scitokens-credmon/bin/scitokens_credential_pr
 
 # Path to the private keyfile
 LOCAL_CREDMON_PRIVATE_KEY = /etc/condor/scitokens_ec_private.key
-# Each key must have a name that relying parties can look up.
-LOCAL_CREDMON_PRIVATE_KEY_ID = key-es356
 # The issuer location; relying parties will need to be able to access this issuer to
 # download the corresponding public key.
 LOCAL_CREDMON_ISSUER = https://demo.scitokens.org
@@ -115,5 +113,8 @@ Additionally, the following may be customized
 
 # The lifetime, in seconds, for a new token.  The credmon will continuously renew
 # credentials on the submit-side.
-LOCAL_CREDMON_TOKEN_LIFETIME = 1200
+# LOCAL_CREDMON_TOKEN_LIFETIME = 1200
+
+# Each key must have a name that relying parties can look up; defaults to "local"
+# LOCAL_CREDMON_KEY_ID = key-es356
 ```
