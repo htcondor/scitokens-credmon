@@ -29,11 +29,11 @@ class OAuthCredmon(AbstractCredentialMonitor):
         try:
             with open(access_token_path, 'r') as f:
                 access_token = json.load(f)
-        except IOError:
-            self.log.warning("Could not open access token %s", access_token_path)
+        except IOError as ie:
+            self.log.warning("Could not open access token %s: %s", access_token_path, str(ie))
             return True
-        except ValueError:
-            self.log.warning("The format of the access token file %s is invalid", access_token_path)
+        except ValueError as ve:
+            self.log.warning("The access token file at %s is invalid; could not parse as JSON: %s", access_token_path, str(ve))
             return True
 
         # load metadata to check if access token uses a refresh token
@@ -41,10 +41,10 @@ class OAuthCredmon(AbstractCredentialMonitor):
             try:
                 with open(metadata_path, 'r') as f:
                     token_metadata = json.load(f)
-            except IOError:
-                self.log.warning("Could not find metadata file %s", metadata_path)
-            except ValueError:
-                self.log.warning("The format of the metadata file %s is invalid", metadata_path)
+            except IOError as ie:
+                self.log.warning("Could not find metadata file %s: %s", metadata_path, ie)
+            except ValueError as ve:
+                self.log.warning("The metadata file at %s is invalid; could not parse as JSON: %s", metadata_path, str(ve))
             else:
                 if 'use_refresh_token' in token_metadata:
                     if token_metadata['use_refresh_token'] == False:
@@ -69,11 +69,11 @@ class OAuthCredmon(AbstractCredentialMonitor):
         try:
             with open(refresh_token_path, 'r') as f:
                 refresh_token = json.load(f)
-        except IOError:
-            self.log.error("Could not open refresh token %s", refresh_token_path)
+        except IOError as ie:
+            self.log.error("Could not open refresh token %s: %s", refresh_token_path, str(ie))
             return False
-        except ValueError:
-            self.log.error("The format of the refresh token file %s is invalid", refresh_token_path)
+        except ValueError as ve:
+            self.log.error("The format of the refresh token file %s is invalid; could not parse as JSON: %s", refresh_token_path, str(ve))
             return False
 
         # load metadata
@@ -81,11 +81,11 @@ class OAuthCredmon(AbstractCredentialMonitor):
         try:
             with open(metadata_path, 'r') as f:
                 token_metadata = json.load(f)
-        except IOError:
-            self.log.error("Could not open metadata file %s", metadata_path)
+        except IOError as ie:
+            self.log.error("Could not open metadata file %s: %s", metadata_path, str(ie))
             return False
-        except ValueError:
-            self.log.error("The format of the metadata file %s is invalid", metadata_path)
+        except ValueError as ve:
+            self.log.error("The metadata file at %s is invalid; could not parse as JSON: %s", metadata_path, str(ve))
             return False
 
         # refresh the token (provides both new refresh and access tokens)

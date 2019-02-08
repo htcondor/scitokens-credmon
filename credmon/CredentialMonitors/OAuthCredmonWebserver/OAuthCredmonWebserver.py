@@ -54,13 +54,16 @@ def get_provider_ad(provider, key_path):
     if not os.path.exists(key_path):
         raise Exception("Key file {0} doesn't exist".format(key_path))
 
-    with open(key_path, 'r') as key_file:
-        for ad in classad.parseAds(key_file):
-            ad_provider = get_provider_str(ad['Provider'], ad.get('Handle', ''))
-            if ad_provider == provider:
-                break
-        else:
-            raise Exception("Provider {0} not in key file {1}".format(provider, key_path))
+    try:
+        with open(key_path, 'r') as key_file:
+            for ad in classad.parseAds(key_file):
+                ad_provider = get_provider_str(ad['Provider'], ad.get('Handle', ''))
+                if ad_provider == provider:
+                    break
+            else:
+                raise Exception("Provider {0} not in key file {1}".format(provider, key_path))
+    except IOError as ie:
+        print("Failed to open key file {0}: {1}".format(key_path, str(ie)))
 
     return ad
 
@@ -294,8 +297,12 @@ def oauth_return(provider):
     access_token_path = os.path.join(user_cred_dir, provider.replace(' ', '_') + '.use')
     metadata_path = os.path.join(user_cred_dir, provider.replace(' ', '_') + '.meta')
 
-    # write tokens to tmp files          
-    (tmp_fd, tmp_access_token_path) = tempfile.mkstemp(dir = user_cred_dir)
+    # write tokens to tmp files
+    try:
+        (tmp_fd, tmp_access_token_path) = tempfile.mkstemp(dir = user_cred_dir)
+    except OSError as oe:
+        print("Failed to create temporary file in the user credential directory: {0}".format(str(oe)))
+        raise
     with os.fdopen(tmp_fd, 'w') as f:
         json.dump(token, f)
 
