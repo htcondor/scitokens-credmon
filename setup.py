@@ -11,7 +11,7 @@ setup(
     author_email = 'jpatton@cs.wisc.edu',
     license = 'MIT',
     packages = find_packages(),
-    scripts = ['bin/condor_credmon'],
+    scripts = ['bin/condor_credmon', 'bin/scitokens_credential_producer'],
     install_requires = [
         'htcondor >= 8.8.0',
         'requests_oauthlib==1.0.0',

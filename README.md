@@ -53,8 +53,8 @@ the directory under `/var/lib/condor/credentials`:
 2. On the `condor_schedd` host, add the following
 to a configuration file in `/etc/condor/config.d` or wherever the `$CONDOR_CONFIG` variable
 references:
-	```
-	SEC_CREDENTIAL_DIRECTORY = /var/lib/condor/credentials
+    ```
+    SEC_CREDENTIAL_DIRECTORY = /var/lib/condor/credentials
     # PYTHONPATH only needs to be set if the credmon is not installed to system Python
     SEC_CREDENTIAL_MONITOR_ENVIRONMENT = "PYTHONPATH=/var/lib/scitokens-credmon"
     SEC_CREDENTIAL_MONITOR = /usr/bin/condor_credmon
@@ -95,7 +95,7 @@ The following configuration directives setup the local credmon mode:
 ```
 # The credential producer invoked by `condor_submit`; causes the credd to be invoked
 # prior to the job being submitted.
-SEC_CREDENTIAL_PRODUCER = /var/lib/scitokens-credmon/bin/scitokens_credential_producer
+SEC_CREDENTIAL_PRODUCER = /usr/bin/scitokens_credential_producer
 
 # Path to the private keyfile
 # LOCAL_CREDMON_PRIVATE_KEY = /etc/condor/scitokens-private.pem
