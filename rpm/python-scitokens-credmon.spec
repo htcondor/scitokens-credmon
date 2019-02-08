@@ -2,7 +2,7 @@
 %global pypi_name scitokens-credmon
 
 Name:           python-%{pypi_name}
-Version:        0.1
+Version:        0.2
 Release:        1%{?dist}
 Summary:        Scitokens credential monitor for use with HTCondor
 
@@ -15,7 +15,7 @@ BuildRequires:  python2-devel
 BuildRequires:  python-setuptools
 
 %description
-
+A HTCondor credentials monitor specific for OAuth2 and SciTokens workflows.
 
 %package -n     python2-%{pypi_name}
 Summary:        Scitokens credential monitor for use with HTCondor
@@ -27,8 +27,10 @@ Requires:       python-six
 Requires:       python-flask
 Requires:       python2-cryptography
 Requires:       python2-scitokens
-%description -n python2-%{pypi_name}
+Requires:       httpd
+Requires:       mod_wsgi
 
+%description -n python2-%{pypi_name}
 
 
 %prep
@@ -41,18 +43,23 @@ rm -rf %{pypi_name}.egg-info
 
 %install
 %py2_install
-cp %{buildroot}/%{_bindir}/condor_credmon %{buildroot}/%{_bindir}/condor_credmon-2
-ln -sf %{_bindir}/condor_credmon-2 %{buildroot}/%{_bindir}/condor_credmon-%{python2_version}
 
 
 %files -n python2-%{pypi_name} 
 %doc 
-%{_bindir}/condor_credmon
-%{_bindir}/condor_credmon-2
-%{_bindir}/condor_credmon-%{python2_version}
+%{_bindir}/scitokens_credmon
+%{_bindir}/scitokens_credential_producer
 %{python2_sitelib}/credmon
 %{python2_sitelib}/scitokens_credmon-%{version}-py?.?.egg-info
+%attr(0750, root, condor) /var/lib/condor/credential
+%ghost /var/lib/condor/credential/wsgi_session_key
+/var/www/cgi-bin/wsgi/%{pypi_name}/%{pypi_name}.wsgi
+%{_sysconfdir}/condor/config.d/50-scitokens-credmon.conf
+%{_sysconfdir}/httpd/conf.d/scitokens_credmon.conf
 
 %changelog
+* Fri Feb 08 2019 Brian Bockelman <brian.bockelman@cern.ch> - 0.2-1
+- Include proper packaging and WSGI scripts for credmon.
+
 * Fri Feb 08 2019 Brian Bockelman <brian.bockelman@cern.ch> - 0.1-1
 - Initial package version as uploaded to the Test PyPI instance.
