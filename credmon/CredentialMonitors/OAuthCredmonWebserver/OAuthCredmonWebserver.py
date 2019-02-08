@@ -84,7 +84,7 @@ def before_request():
 def jwks_uri():
 
     public_keyfile = htcondor.param.get("LOCAL_CREDMON_PUBLIC_KEY", "/etc/condor/scitokens.pem")
-    kid = htcondor.param.get("LOCAL_CREDMON_PRIVATE_KEY_ID", htcondor.param.get("LOCAL_CREDMON_KEY_ID", ""))
+    kid = htcondor.param.get("LOCAL_CREDMON_KEY_ID", "local")
 
     with open(public_keyfile, 'rb') as key_file:
             public_key = serialization.load_pem_public_key(
