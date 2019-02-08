@@ -17,7 +17,8 @@ setup(
         'requests_oauthlib==1.0.0',
         'six',
         'flask',
-        'cryptography'
+        'cryptography',
+        'scitokens'
         ],
     include_package_data = True
     )
