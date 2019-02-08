@@ -49,7 +49,7 @@ def create_credentials():
     public_keyfile = htcondor.param.get("LOCAL_CREDMON_PUBLIC_KEY", "/etc/condor/scitokens.pem")
 
     try:
-        fd = os.open(private_keyfile, os.O_CREAT | os.O_EXCL, 0700)
+        fd = os.open(private_keyfile, os.O_CREAT | os.O_EXCL, 0o700)
     except Exception as exc:
         logger.info("Using existing credential at %s for local signer", private_keyfile)
         return
@@ -74,7 +74,7 @@ def create_credentials():
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
-        atomic_output(public_pem, public_keyfile, mode=0644)
+        atomic_output(public_pem, public_keyfile, mode=0o644)
         logger.info("Successfully creeated a new credential for local credmon at %s", private_keyfile)
     except:
         logger.exception("Failed to create a default private/public keypair; local credmon functionality may not work.")
