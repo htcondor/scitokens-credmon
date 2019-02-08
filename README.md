@@ -91,21 +91,19 @@ In the "local mode", the credmon will use a provided private key to sign a SciTo
 directly, bypassing any OAuth callout.  This is useful in the case where the admin
 wants a less-complex setup than a full OAuth deployment.
 
-To setup the local credmon mode, the following configuration directives are mandatory
+The following configuration directives setup the local credmon mode:
 ```
 # The credential producer invoked by `condor_submit`; causes the credd to be invoked
 # prior to the job being submitted.
 SEC_CREDENTIAL_PRODUCER = /var/lib/scitokens-credmon/bin/scitokens_credential_producer
 
 # Path to the private keyfile
-LOCAL_CREDMON_PRIVATE_KEY = /etc/condor/scitokens_ec_private.key
+# LOCAL_CREDMON_PRIVATE_KEY = /etc/condor/scitokens-private.pem
+
 # The issuer location; relying parties will need to be able to access this issuer to
 # download the corresponding public key.
-LOCAL_CREDMON_ISSUER = https://demo.scitokens.org
-```
+# LOCAL_CREDMON_ISSUER = https://$(FULL_HOSTNAME)
 
-Additionally, the following may be customized
-```
 # The authorizations given to the token.  Should be of the form `authz:path` and
 # space-separated for multiple authorizations.  The token `{username}` will be
 # expanded with the user's Unix username.

@@ -20,7 +20,7 @@ class LocalCredmon(OAuthCredmon):
     def __init__(self, *args, **kwargs):
         super(LocalCredmon, self).__init__(*args, **kwargs)
         self.provider = "scitokens"
-        self.token_issuer = "UNKNOWN"
+        self.token_issuer = None
         self.authz_template = "read:/user/{username} write:/user/{username}"
         self.token_lifetime = 60*20
         if htcondor != None:
@@ -35,6 +35,8 @@ class LocalCredmon(OAuthCredmon):
             self.token_lifetime = htcondor.param.get("LOCAL_CREDMON_TOKEN_LIFETIME", self.token_lifetime)
         else:
             self._private_key_location = None
+        if not self.token_issuer:
+            self.token_issuer = 'https://{}'.format(htcondor.param["FULL_HOSTNAME"])
 
     def refresh_access_token(self, username, token_name):
         """
