@@ -25,6 +25,8 @@ Requires:       condor-python
 Requires:       python-requests-oauthlib
 Requires:       python-six
 Requires:       python-flask
+Requires:       python2-cryptography
+Requires:       python2-scitokens
 %description -n python2-%{pypi_name}
 
 
