@@ -16,7 +16,8 @@ setup(
         'htcondor >= 8.8.0',
         'requests_oauthlib==1.0.0',
         'six',
-        'flask'
+        'flask',
+        'cryptography'
         ],
     include_package_data = True
     )
