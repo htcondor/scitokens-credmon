@@ -1,6 +1,9 @@
 from credmon.CredentialMonitors.AbstractCredentialMonitor import AbstractCredentialMonitor
 from credmon.utils import atomic_rename
-from requests_oauthlib import OAuth2Session
+try:
+    from requests_oauthlib import OAuth2Session
+except:
+    OAuth2Session = None
 import os
 import time
 import json
@@ -8,6 +11,11 @@ import glob
 import tempfile
 
 class OAuthCredmon(AbstractCredentialMonitor):
+
+    use_token_metadata = True
+
+    def __init__(self, *args, **kw):
+        super(OAuthCredmon, self).__init__(*args, **kw)
 
     def should_renew(self, username, token_name):
 
@@ -29,17 +37,18 @@ class OAuthCredmon(AbstractCredentialMonitor):
             return True
 
         # load metadata to check if access token uses a refresh token
-        try:
-            with open(metadata_path, 'r') as f:
-                token_metadata = json.load(f)
-        except IOError:
-            self.log.warning("Could not find metadata file %s", metadata_path)
-        except ValueError:
-            self.log.warning("The format of the metadata file %s is invalid", metadata_path)
-        else:
-            if 'use_refresh_token' in token_metadata:
-                if token_metadata['use_refresh_token'] == False:
-                    return False
+        if self.use_token_metadata:
+            try:
+                with open(metadata_path, 'r') as f:
+                    token_metadata = json.load(f)
+            except IOError:
+                self.log.warning("Could not find metadata file %s", metadata_path)
+            except ValueError:
+                self.log.warning("The format of the metadata file %s is invalid", metadata_path)
+            else:
+                if 'use_refresh_token' in token_metadata:
+                    if token_metadata['use_refresh_token'] == False:
+                        return False
 
         # get token half-life
         create_time = os.path.getctime(access_token_path)
@@ -52,6 +61,8 @@ class OAuthCredmon(AbstractCredentialMonitor):
         return False
 
     def refresh_access_token(self, username, token_name):
+        if OAuth2Session is None:
+            raise ImportError("No module named OAuth2Session")
 
         # load the refresh token
         refresh_token_path = os.path.join(self.cred_dir, username, token_name + '.top')
