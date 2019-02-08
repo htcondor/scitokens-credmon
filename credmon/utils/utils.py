@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 import logging.handlers
 import stat
@@ -200,3 +201,30 @@ def atomic_rename(tmp_file, target_file, mode=stat.S_IRUSR):
     os.chmod(tmp_file, mode)
     os.rename(tmp_file, target_file)
 
+def atomic_output_json(output_object, output_fname):
+    """
+    Take a Python object and attempt to serialize it to JSON and write
+    the resulting bytes to an output file atomically.
+
+    This function does not return a value and throws an exception on failure.
+
+    :param output_object: A Python object to be serialized into JSON.
+    :param output_fname: A filename to write the object into.
+    :type output_fname: string
+    """
+
+    dir_name, file_name = os.path.split(output_fname)
+
+    tmp_fd, tmp_file_name = tempfile.mkstemp(dir = dir_name, prefix=file_name)
+    try:
+        with os.fdopen(tmp_fd, 'w') as fp:
+            json.dump(output_object, fp)
+
+        # atomically move new tokens in place
+        atomic_rename(tmp_file_name, output_fname)
+
+    finally:
+        try:
+            os.unlink(tmp_file_name)
+        except OSError:
+            pass
