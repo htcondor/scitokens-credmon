@@ -54,10 +54,11 @@ the directory under `/var/lib/condor/credentials`:
     SEC_CREDENTIAL_MONITOR = /usr/bin/condor_credmon
     SEC_CREDENTIAL_MONITOR_LOG = /var/log/condor/CredMon
     ```
-3. Modify the `condor_config` to enable the HTCondor CredD to work
-with the CredMon:
+3. Modify the `condor_config` to enable the HTCondor CredD and to have
+the CredD transfer credentials to job sandboxes:
     ```
-    TOKENS = True
+    DAEMON_LIST = $(DAEMON_LIST), CREDD
+    CREDD_OAUTH_MODE = True
     ```
 4. Add OAuth client information to the `condor_config` for any OAuth
 providers that you would like your users to be able to obtain
