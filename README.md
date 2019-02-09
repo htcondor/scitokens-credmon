@@ -58,7 +58,7 @@ references:
     # PYTHONPATH only needs to be set if the credmon is not installed to system Python
     SEC_CREDENTIAL_MONITOR_ENVIRONMENT = "PYTHONPATH=/var/lib/scitokens-credmon"
     SEC_CREDENTIAL_MONITOR = /usr/bin/condor_credmon
-    SEC_CREDENTIAL_MONITOR_LOG = /var/log/condor/CredMon
+    SEC_CREDENTIAL_MONITOR_LOG = /var/log/condor/CredMonLog
     ```
 3. Modify the `condor_config` to enable the HTCondor CredD and to have
 the CredD transfer credentials to job sandboxes:

@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import logging.handlers
+import pwd
 import stat
 import sys
 import tempfile
@@ -112,12 +113,26 @@ def setup_logging(log_path = None, log_level = None):
     root_logger = logging.getLogger()
     root_logger.setLevel(log_level)
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    log_handler = logging.handlers.WatchedFileHandler(log_path)
-    log_handler.setFormatter(logging.Formatter(log_format))
-    root_logger.addHandler(log_handler)
 
-    # Return a child logger with the same name as the script that called it
-    child_logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    old_euid = os.geteuid()
+    try:
+        condor_euid = pwd.getpwnam("condor").pw_uid
+        os.seteuid(condor_euid)
+    except:
+        pass
+
+    try:
+        log_handler = logging.handlers.WatchedFileHandler(log_path)
+        log_handler.setFormatter(logging.Formatter(log_format))
+        root_logger.addHandler(log_handler)
+
+        # Return a child logger with the same name as the script that called it
+        child_logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    finally:
+        try:
+            os.seteuid(old_euid)
+        except:
+            pass
     
     return child_logger
     

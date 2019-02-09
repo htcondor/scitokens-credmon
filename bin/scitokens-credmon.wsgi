@@ -2,12 +2,13 @@
 # Configure Logging
 #
 
-from credmon.utils import setup_logging, get_cred_dir
+from credmon.utils import setup_logging
 import os
 import logging
 
-cred_dir = get_cred_dir()
-logger = setup_logging(log_path = os.path.join(cred_dir, 'oauth_credmon_webserver.log'),
+import htcondor
+
+logger = setup_logging(log_path = htcondor.param.get("SEC_CREDENTIAL_MONITOR_LOG", "/var/log/condor/CredMonLog"),
                        log_level = logging.DEBUG)
 
 #
