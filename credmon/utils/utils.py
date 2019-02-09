@@ -29,7 +29,7 @@ def atomic_output(file_contents, output_fname, mode=stat.S_IRUSR):
             fp.write(file_contents)
 
         # atomically move new tokens in place
-        atomic_rename(tmp_file_name, output_fname)
+        atomic_rename(tmp_file_name, output_fname, mode=mode)
 
     finally:
         try:
@@ -70,7 +70,7 @@ def create_credentials():
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption()
         )
-        atomic_output(private_pem, private_keyfile)
+        atomic_output(private_pem, private_keyfile, mode=0o600)
 
         public_pem = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
