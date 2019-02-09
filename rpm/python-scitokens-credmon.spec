@@ -51,11 +51,11 @@ rm -rf %{pypi_name}.egg-info
 %{_bindir}/scitokens_credential_producer
 %{python2_sitelib}/credmon
 %{python2_sitelib}/scitokens_credmon-%{version}-py?.?.egg-info
-%attr(2770, root, condor) /var/lib/condor/credential
-%ghost /var/lib/condor/credential/wsgi_session_key
-/var/www/cgi-bin/wsgi/%{pypi_name}/%{pypi_name}.wsgi
-%{_sysconfdir}/condor/config.d/50-scitokens-credmon.conf
-%{_sysconfdir}/httpd/conf.d/scitokens_credmon.conf
+%attr(2770, root, condor) /var/lib/condor/credentials
+%ghost /var/lib/condor/credentials/wsgi_session_key
+/var/www/wsgi-scripts/%{pypi_name}/%{pypi_name}.wsgi
+%config(noreplace) %{_sysconfdir}/condor/config.d/50-scitokens-credmon.conf
+%config(noreplace) %{_sysconfdir}/httpd/conf.d/scitokens_credmon.conf
 
 %changelog
 * Fri Feb 08 2019 Brian Bockelman <brian.bockelman@cern.ch> - 0.2-1

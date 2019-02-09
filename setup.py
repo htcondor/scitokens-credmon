@@ -21,9 +21,9 @@ setup(
         'scitokens'
         ],
     data_files=[('/etc/httpd/conf.d',                       ['configs/scitokens_credmon.conf']),
-                ('/var/lib/condor/credential',              ['configs/README.credentials']),
+                ('/var/lib/condor/credentials',              ['configs/README.credentials']),
                 ('/etc/condor/config.d',                    ['configs/50-scitokens-credmon.conf']),
-                ('/var/www/cgi-bin/wsgi/scitokens-credmon', ['bin/scitokens-credmon.wsgi'])
+                ('/var/www/wsgi-scripts/scitokens-credmon', ['bin/scitokens-credmon.wsgi'])
                ],
     include_package_data = True
     )

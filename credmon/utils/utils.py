@@ -254,7 +254,7 @@ def generate_secret_key():
         logger.warning("HTCondor module is missing will use a non-persistent WSGI session key")
         return os.urandom(16)
 
-    keyfile = os.path.join(htcondor.param.get("SEC_CREDENTIAL_DIRECTORY", "/var/lib/condor/credential"), "wsgi_session_key")
+    keyfile = os.path.join(htcondor.param.get("SEC_CREDENTIAL_DIRECTORY", "/var/lib/condor/credentials"), "wsgi_session_key")
 
     try:
         fd = os.open(keyfile, os.O_CREAT | os.O_RDWR, 0o600)
