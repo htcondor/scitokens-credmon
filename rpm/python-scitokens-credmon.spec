@@ -51,7 +51,7 @@ rm -rf %{pypi_name}.egg-info
 %{_bindir}/scitokens_credential_producer
 %{python2_sitelib}/credmon
 %{python2_sitelib}/scitokens_credmon-%{version}-py?.?.egg-info
-%attr(0750, root, condor) /var/lib/condor/credential
+%attr(2770, root, condor) /var/lib/condor/credential
 %ghost /var/lib/condor/credential/wsgi_session_key
 /var/www/cgi-bin/wsgi/%{pypi_name}/%{pypi_name}.wsgi
 %{_sysconfdir}/condor/config.d/50-scitokens-credmon.conf
