@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import logging.handlers
+import pwd
 import stat
 import sys
 import tempfile
@@ -28,7 +29,7 @@ def atomic_output(file_contents, output_fname, mode=stat.S_IRUSR):
             fp.write(file_contents)
 
         # atomically move new tokens in place
-        atomic_rename(tmp_file_name, output_fname)
+        atomic_rename(tmp_file_name, output_fname, mode=mode)
 
     finally:
         try:
@@ -51,7 +52,7 @@ def create_credentials():
 
     try:
         fd = os.open(private_keyfile, os.O_CREAT | os.O_EXCL, 0o700)
-    except Exception as exc:
+    except Exception:
         logger.info("Using existing credential at %s for local signer", private_keyfile)
         return
 
@@ -69,7 +70,7 @@ def create_credentials():
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption()
         )
-        atomic_output(private_pem, private_keyfile)
+        atomic_output(private_pem, private_keyfile, mode=0o600)
 
         public_pem = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
@@ -112,12 +113,26 @@ def setup_logging(log_path = None, log_level = None):
     root_logger = logging.getLogger()
     root_logger.setLevel(log_level)
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    log_handler = logging.handlers.WatchedFileHandler(log_path)
-    log_handler.setFormatter(logging.Formatter(log_format))
-    root_logger.addHandler(log_handler)
 
-    # Return a child logger with the same name as the script that called it
-    child_logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    old_euid = os.geteuid()
+    try:
+        condor_euid = pwd.getpwnam("condor").pw_uid
+        os.seteuid(condor_euid)
+    except:
+        pass
+
+    try:
+        log_handler = logging.handlers.WatchedFileHandler(log_path)
+        log_handler.setFormatter(logging.Formatter(log_format))
+        root_logger.addHandler(log_handler)
+
+        # Return a child logger with the same name as the script that called it
+        child_logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    finally:
+        try:
+            os.seteuid(old_euid)
+        except:
+            pass
     
     return child_logger
     
@@ -228,3 +243,39 @@ def atomic_output_json(output_object, output_fname):
             os.unlink(tmp_file_name)
         except OSError:
             pass
+
+def generate_secret_key():
+    """
+    Return a secret key that is common across all sessions
+    """
+    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+    if not htcondor:
+        logger.warning("HTCondor module is missing will use a non-persistent WSGI session key")
+        return os.urandom(16)
+
+    keyfile = os.path.join(htcondor.param.get("SEC_CREDENTIAL_DIRECTORY", "/var/lib/condor/credentials"), "wsgi_session_key")
+
+    try:
+        fd = os.open(keyfile, os.O_CREAT | os.O_RDWR, 0o600)
+        current_key = os.read(fd, 24)
+    except Exception:
+        logger.warning("Unable to access WSGI session key; will use a non-persistent key")
+        return os.urandom(16)
+
+    if len(current_key) >= 16:
+        logger.debug("Using the persistent WSGI session key")
+        return current_key
+
+    # We are responsible for generating the keyfile for this webapp to use.
+    new_key = os.urandom(24)
+    try:
+        atomic_output(new_key, keyfile)
+        logger.info("Successfully creeated a new persistent WSGI session key for scitokens-credmon application %s")
+    except:
+        logger.exception("Failed to atomically create a new persistent WSGI session key; will use a transient one.")
+        os.unlink(keyfile)
+        return new_key
+    finally:
+        os.close(fd)
+    return new_key

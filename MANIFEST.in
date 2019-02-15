@@ -1,2 +1,5 @@
 recursive-include credmon/CredentialMonitors/OAuthCredmonWebserver/static *
 recursive-include credmon/CredentialMonitors/OAuthCredmonWebserver/templates *
+recursive-include configs *
+include bin/scitokens-credmon.wsgi
+include README.md
