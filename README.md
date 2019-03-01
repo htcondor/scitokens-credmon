@@ -31,8 +31,9 @@ and associated Flask application.
 
 ## Deployment
 
-After installation of the credmon binaries, the admin needs to inform HTCondor of
-the location of the credmon and that it should be run by default.
+After installation of the credmon binaries, the admin needs to inform
+HTCondor of the location of the credmon and that it should be run by
+default.
 
 1. Decide on a directory where credentials (and related CredMon files)
 will be stored. Create the directory owned by the group condor, not
@@ -50,25 +51,26 @@ the directory under `/var/lib/condor/credentials`:
     drwxrws--- 2 root condor 4096 Jan 23 15:00
     /var/lib/condor/credentials
     ```
-2. On the `condor_schedd` host, add the following
-to a configuration file in `/etc/condor/config.d` or wherever the `$CONDOR_CONFIG` variable
-references:
+2. On the HTCondor submit host, add the following to a HTCondor
+configuration file in `/etc/condor/config.d` or wherever the
+`$CONDOR_CONFIG` environment variable references:
     ```
-    SEC_CREDENTIAL_DIRECTORY = /var/lib/condor/credentials
-    # PYTHONPATH only needs to be set if the credmon is not installed to system Python
-    SEC_CREDENTIAL_MONITOR_ENVIRONMENT = "PYTHONPATH=/var/lib/scitokens-credmon"
+	SEC_CREDENTIAL_DIRECTORY = /var/lib/condor/credentials
+    # set PYTHONPATH if the credmon library is installed in a non-system Python environment
+    # SEC_CREDENTIAL_MONITOR_ENVIRONMENT = "PYTHONPATH=/var/lib/scitokens-credmon"
     SEC_CREDENTIAL_MONITOR = /usr/bin/condor_credmon
     SEC_CREDENTIAL_MONITOR_LOG = /var/log/condor/CredMonLog
     ```
-3. Modify the `condor_config` to enable the HTCondor CredD and to have
-the CredD transfer credentials to job sandboxes:
+3. Modify the submit host HTCondor configuration to enable the
+HTCondor CredD and to have the CredD transfer credentials to job
+sandboxes:
     ```
     DAEMON_LIST = $(DAEMON_LIST), CREDD
     CREDD_OAUTH_MODE = True
     ```
-4. Add OAuth client information to the `condor_config` for any OAuth
-providers that you would like your users to be able to obtain
-access tokens from.
+4. Add OAuth client information to the submit host HTCondor
+configuration for any OAuth providers that you would like your users
+to be able to obtain access tokens from.
   * The client id and client secret are usually generated when you
   register your submit machine as an application with the
   OAuth provider's API. The client secret should be kept in a file
@@ -77,12 +79,17 @@ access tokens from.
   authorization endpoint URL and the token endpoint URL.
 5. Configure the Flask application using WSGI in your web server
 config.
-6. On the HTCondor execute hosts, add the following to the configuration file:
-    ```
+6. On the HTCondor execute hosts, add the following to the HTCondor
+configuration:
+   ```
     CREDD_OAUTH_MODE = TRUE
-    # NOTE: credd will refuse to transfer tokens on a non-encrypted link.
-    SEC_DEFAULT_ENCRYPTION=REQUIRED
     ```
+
+Note that for both submit *and* execute hosts, HTCondor must be
+configured to use encryption for daemon-to-daemon communication:
+```
+SEC_DEFAULT_ENCRYPTION = REQUIRED
+```
 
 Local Credmon Mode
 ------------------
@@ -91,7 +98,7 @@ In the "local mode", the credmon will use a provided private key to sign a SciTo
 directly, bypassing any OAuth callout.  This is useful in the case where the admin
 wants a less-complex setup than a full OAuth deployment.
 
-The following configuration directives setup the local credmon mode:
+The following condor configuration directives set up the local credmon mode:
 ```
 # The credential producer invoked by `condor_submit`; causes the credd to be invoked
 # prior to the job being submitted.
