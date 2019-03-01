@@ -62,10 +62,10 @@ configuration file in `/etc/condor/config.d` or wherever the
     SEC_CREDENTIAL_MONITOR_LOG = /var/log/condor/CredMonLog
     ```
 3. Modify the submit host HTCondor configuration to enable the
-HTCondor CredD and to have the CredD transfer credentials to job
-sandboxes:
+HTCondor CredD and CredMon and to have the CredD transfer credentials
+to job sandboxes:
     ```
-    DAEMON_LIST = $(DAEMON_LIST), CREDD
+    DAEMON_LIST = $(DAEMON_LIST), CREDD, SEC_CREDENTIAL_MONITOR
     CREDD_OAUTH_MODE = True
     ```
 4. Add OAuth client information to the submit host HTCondor
