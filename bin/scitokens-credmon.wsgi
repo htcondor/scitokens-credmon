@@ -9,7 +9,7 @@ import logging
 import htcondor
 
 logger = setup_logging(log_path = htcondor.param.get("SEC_CREDENTIAL_MONITOR_LOG", "/var/log/condor/CredMonLog"),
-                       log_level = logging.DEBUG)
+                       log_level = logging.INFO)
 
 #
 # Load the session key
