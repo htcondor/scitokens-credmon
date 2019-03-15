@@ -21,7 +21,7 @@ logger = logging.getLogger('OAuthCredmonWebserver')
 class LoggerWriter:
     '''Used to override sys.stdout and sys.stderr so that
     all messages are sent to the logger'''
-    
+
     def __init__(self, level):
         self.level = level
 
@@ -47,10 +47,10 @@ def get_provider_str(provider, handle):
 
 def get_provider_ad(provider, key_path):
     '''
-    Returns the ClassAd for a given OAuth provider given 
+    Returns the ClassAd for a given OAuth provider given
     the provider name and path to file with ClassAds.
     '''
-    
+
     if not os.path.exists(key_path):
         raise Exception("Key file {0} doesn't exist".format(key_path))
 
@@ -148,29 +148,30 @@ def key(key):
     key_path = os.path.join(cred_dir, key)
     if not os.path.exists(key_path):
         raise Exception("Key file {0} doesn't exist".format(key_path))
-    
+
     # read in the key file, which is a list of classads
-    session['providers'] = {}
+    providers = {}
     session['logged_in'] = False
     print('Creating new session from {0}'.format(key_path))
     with open(key_path, 'r') as key_file:
-        
+
         # store the path to the key file since it will be accessed later in the session
         session['key_path'] = key_path
-        
+
         # initialize data for each token provider
         for provider_ad in classad.parseAds(key_file):
             provider = get_provider_str(provider_ad['Provider'], provider_ad.get('Handle', ''))
-            session['providers'][provider] = {}
-            session['providers'][provider]['logged_in'] = False
+            providers[provider] = {}
+            providers[provider]['logged_in'] = False
             if 'Scopes' in provider_ad:
-                session['providers'][provider]['requested_scopes'] = [s.rstrip().lstrip() for s in provider_ad['Scopes'].split(',')]
+                providers[provider]['requested_scopes'] = [s.rstrip().lstrip() for s in provider_ad['Scopes'].split(',')]
             if 'Audience' in provider_ad:
-                session['providers'][provider]['requested_resource'] = provider_ad['Audience']
+                providers[provider]['requested_resource'] = provider_ad['Audience']
 
         # the local username is global to the session, just grab it from the last classad
         session['local_username'] = provider_ad['LocalUser']
-        
+
+    session['providers'] = providers
     print('New session started for user {0}'.format(session['local_username']))
     return render_template('index.html')
 
@@ -180,8 +181,12 @@ def oauth_login(provider):
     Go to OAuth provider
     """
 
+    if not ('providers' in session):
+        sys.stderr.write('"providers" key was not found in session object: {0}\n'.format(session))
+        raise KeyError('Key "providers" was not found in session object. This session is invalid.')
     if not (provider in session['providers']):
-        raise Exception("Provider {0} not in list of providers".format(provider))
+        sys.stderr.write('key {0} was not found in session["providers"] dict: {1}\n'.format(provider, session))
+        raise KeyError("Provider {0} was not found in list of providers. This session is invalid.".format(provider))
     provider_ad = get_provider_ad(provider, session['key_path'])
 
     # gather information from the key file classad
@@ -217,7 +222,7 @@ def oauth_login(provider):
     # argument to oauth_return() (e.g. if getting multiple tokens from the
     # same OAuth endpoint)
     session['outgoing_provider'] = provider
-    
+
     return redirect(authorization_url)
 
 @app.route('/return/<provider>')
@@ -228,9 +233,12 @@ def oauth_return(provider):
 
     # get the provider name from the outgoing_provider set in oauth_login()
     provider = session.pop('outgoing_provider', get_provider_str(provider, ''))
+    if not ('providers' in session):
+        sys.stderr.write('"providers" key was not found in session object: {0}\n'.format(session))
+        raise KeyError('Key "providers" was not found in session object. This session is invalid.')
     if not (provider in session['providers']):
-        raise Exception("Provider {0} not in list of providers".format(provider))
-
+        sys.stderr.write('key {0} was not found in session["providers"] dict: {1}\n'.format(provider, session))
+        raise KeyError("Provider {0} was not found in list of providers. This session is invalid.".format(provider))
     provider_ad = get_provider_ad(provider, session['key_path'])
 
     # gather information from the key file classad
@@ -238,7 +246,7 @@ def oauth_return(provider):
     redirect_uri = provider_ad['ReturnUrl']
     state = session['providers'][provider]['state']
     oauth = OAuth2Session(client_id, state=state, redirect_uri=redirect_uri)
-    
+
     # convert http url to https if needed
     if request.url.startswith("http://"):
         updated_url = request.url.replace('http://', 'https://', 1)
@@ -253,7 +261,7 @@ def oauth_return(provider):
         client_secret=client_secret,
         method='POST')
     print('Got {0} token for user {1}'.format(provider, session['local_username']))
-    
+
     # get user info if available
     # todo: make this more generic
     try:
@@ -310,11 +318,11 @@ def oauth_return(provider):
     (tmp_fd, tmp_refresh_token_path) = tempfile.mkstemp(dir = user_cred_dir)
     with os.fdopen(tmp_fd, 'w') as f:
         json.dump(refresh_token, f)
-        
+
     (tmp_fd, tmp_metadata_path) = tempfile.mkstemp(dir = user_cred_dir)
     with os.fdopen(tmp_fd, 'w') as f:
         json.dump(metadata, f)
-        
+
     # (over)write token files
     try:
         atomic_rename(tmp_access_token_path, access_token_path)
@@ -331,6 +339,5 @@ def oauth_return(provider):
     for provider in session['providers']:
         if session['providers'][provider]['logged_in'] == False:
             session['logged_in'] = False
-    
-    return redirect("/")
 
+    return redirect("/")
