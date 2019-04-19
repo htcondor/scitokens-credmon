@@ -152,6 +152,8 @@ def get_cred_dir(cred_dir = None):
     # Get the location of the credential directory
     if (cred_dir is None) and (htcondor is not None) and ('SEC_CREDENTIAL_DIRECTORY' in htcondor.param):
         cred_dir = htcondor.param['SEC_CREDENTIAL_DIRECTORY']
+    elif cred_dir is not None:
+        pass
     else:
         raise RuntimeError('The credential directory must be specified in condor_config as SEC_CREDENTIAL_DIRECTORY or passed as an argument')
 
