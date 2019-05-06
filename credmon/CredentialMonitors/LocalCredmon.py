@@ -49,10 +49,10 @@ class LocalCredmon(OAuthCredmon):
         token.update_claims({'scp': user_authz})
 
         # Serialize the token and write it to a file
-        serialized_token = token.serialize(issuer=self.token_issuer, lifetime=self.token_lifetime)
+        serialized_token = token.serialize(issuer=self.token_issuer, lifetime=int(self.token_lifetime))
 
         oauth_response = {"access_token": serialized_token,
-                          "expires_in":   self.token_lifetime}
+                          "expires_in":   int(self.token_lifetime)}
 
         access_token_path = os.path.join(self.cred_dir, username, token_name + '.use')
 
