@@ -46,7 +46,7 @@ class LocalCredmon(OAuthCredmon):
         token = scitokens.SciToken(algorithm="ES256", key=self._private_key, key_id=self._private_key_id)
         token.update_claims({'sub': username})
         user_authz = self.authz_template.format(username=username)
-        token.update_claims({'scp': user_authz})
+        token.update_claims({'scope': user_authz})
 
         # Serialize the token and write it to a file
         serialized_token = token.serialize(issuer=self.token_issuer, lifetime=int(self.token_lifetime))
