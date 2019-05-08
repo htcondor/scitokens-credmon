@@ -23,7 +23,7 @@ Summary:        SciTokens credential monitor for use with HTCondor
  
 Requires:       python2-condor
 Requires:       python2-requests-oauthlib
-Requires:       python2-six
+Requires:       python-six
 Requires:       python-flask
 Requires:       python2-cryptography
 Requires:       python2-scitokens
