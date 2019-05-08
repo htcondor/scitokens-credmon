@@ -9,6 +9,7 @@ import time
 import json
 import glob
 import tempfile
+import re
 
 class OAuthCredmon(AbstractCredentialMonitor):
 
@@ -57,7 +58,7 @@ class OAuthCredmon(AbstractCredentialMonitor):
         # check if token is past its half-life
         if time.time() > refresh_time:
             return True
-            
+
         return False
 
     def refresh_access_token(self, username, token_name):
@@ -139,4 +140,31 @@ class OAuthCredmon(AbstractCredentialMonitor):
         for access_token_file in access_token_files:
             self.check_access_token(access_token_file)
 
+        # also cleanup any stale key files
+        self.cleanup_key_files()
 
+    def cleanup_key_files(self):
+
+        # key filenames are hashes with str len 64
+        key_file_re = re.compile(r'^[a-f0-9]{64}$')
+
+        # loop over all possible key files in cred_dir
+        key_files = glob.glob(os.path.join(self.cred_dir, '?'*64))
+        for key_file in key_files:
+            if ((not key_file_re.match(os.path.basename(key_file)))
+                    or os.path.isdir(key_file)):
+                continue
+
+            try:
+                ctime = os.stat(key_file).st_ctime
+            except OSError as os_error:
+                self.log.error('Could not stat key file %s: %s', key_file, os_error)
+                continue
+
+            # remove key files if over 12 hours old
+            if time.time() - ctime > 12*3600:
+                self.log.info('Removing stale key file %s', os.path.basename(key_file))
+                try:
+                    os.unlink(key_file)
+                except OSError as os_error:
+                    self.log.error('Could not remove key file %s: %s', key_file, os_error)

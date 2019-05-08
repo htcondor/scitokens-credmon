@@ -63,7 +63,7 @@ def get_provider_ad(provider, key_path):
             else:
                 raise Exception("Provider {0} not in key file {1}".format(provider, key_path))
     except IOError as ie:
-        print("Failed to open key file {0}: {1}".format(key_path, str(ie)))
+        sys.stderr.write("Failed to open key file {0}: {1}\n".format(key_path, str(ie)))
         raise
 
     return ad
@@ -329,7 +329,7 @@ def oauth_return(provider):
         atomic_rename(tmp_refresh_token_path, refresh_token_path)
         atomic_rename(tmp_metadata_path, metadata_path)
     except OSError as e:
-        sys.stderr.write(e)
+        sys.stderr.write('{0}\n'.format(str(e)))
 
     # mark provider as logged in
     session['providers'][provider]['logged_in'] = True
@@ -339,5 +339,13 @@ def oauth_return(provider):
     for provider in session['providers']:
         if session['providers'][provider]['logged_in'] == False:
             session['logged_in'] = False
+
+    # cleanup key file if logged in
+    if session['logged_in']:
+        print('Attempting to remove session file {0}'.format(session['key_path']))
+        try:
+            os.unlink(session['key_path'])
+        except OSError as e:
+            sys.stderr.write('Could not remove session file {0}: {1}\n'.format(session['key_path'], str(e)))
 
     return redirect("/")
