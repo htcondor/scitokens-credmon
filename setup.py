@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='scitokens-credmon',
-    version = '0.2',
-    description = 'Scitokens credential monitor for use with HTCondor',
+    version = '0.3',
+    description = 'SciTokens credential monitor for use with HTCondor',
     long_description = open('README.md').read(),
     long_description_content_type = "text/markdown",
     url = 'https://github.com/htcondor/scitokens-credmon',
@@ -20,10 +20,5 @@ setup(
         'cryptography',
         'scitokens'
         ],
-    data_files=[('/etc/httpd/conf.d',                       ['configs/scitokens_credmon.conf']),
-                ('/var/lib/condor/credentials',              ['configs/README.credentials']),
-                ('/etc/condor/config.d',                    ['configs/50-scitokens-credmon.conf']),
-                ('/var/www/wsgi-scripts/scitokens-credmon', ['bin/scitokens-credmon.wsgi'])
-               ],
     include_package_data = True
     )
