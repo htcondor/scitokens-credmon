@@ -123,15 +123,6 @@ The HTCondor OAuth2 token configuration parameters are:
 <PROVIDER>_TOKEN_URL           The token URL for the OAuth2 provider
 <PROVIDER>_USER_URL            The user API endpoint URL for the OAuth2 provider
 ```
-For example, for Box.com, you could configure HTCondor as follows:
-```
-BOX_CLIENT_ID = changeme
-BOX_CLIENT_SECRET_FILE = /etc/condor/.secrets/box
-BOX_RETURN_URL_SUFFIX = /return/box
-BOX_AUTHORIZATION_URL = https://account.box.com/api/oauth2/authorize
-BOX_TOKEN_URL = https://api.box.com/oauth2/token
-BOX_USER_URL = https://api.box.com/2.0/users/me
-```
 Multiple OAuth2 clients can be configured as long as unique names are
 used for each `<PROVIDER>`.
 
