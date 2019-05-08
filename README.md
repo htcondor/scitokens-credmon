@@ -85,16 +85,26 @@ configuration:
 
 ### Submit Host Admin Configuration
 
-1. `/etc/httpd/conf.d/scitokens_credmon.conf` adds the OAuth2 Token
-Flask app at the root of your Apache webserver.
+If you used `scitokens_credmon --deploy --apache`, you can skip to step 3.
 
-2. `CREDD_OAUTH_MODE` must be set to `TRUE` in your HTCondor config.
+1. See the
+[example scitokens_credmon.conf](examples/config/apache/scitokens_credmon.conf)
+for configuring the OAuth2 Token Flask app. The config must point to a WSGI
+script that imports and runs the Flask app, see the 
+[example scitokens-credmon.wsgi](examples/wsgi/scitokens-credmon.wsgi).
+
+2. See the
+[example 50-scitokens-credmon.conf](examples/config/condor/50-scitokens-credmon.conf)
+for configuring HTCondor with the CredD and CredMon.
 
 3. OAuth2 client information should be added to the submit host HTCondor
 configuration for any OAuth2 providers that you would like your users
 to be able to obtain access tokens from. If you installed your
 configuration using `scitokens_credmon --deploy`, an example is given
-in `/etc/condor/config.d/60-oauth-token-providers.conf`. For each provider:
+in `60-oauth-token-providers.conf` in your `config.d` directory, otherwise
+see the
+[example 60-oauth-token-providers.conf](examples/config/condor/50-scitokens-credmon.conf).
+For each provider:
     * The client id and client secret are generated when you
     register your submit machine as an application with the
     OAuth2 provider's API. The client secret must be kept in a file
