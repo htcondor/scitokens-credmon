@@ -6,7 +6,9 @@ from credmon.utils import setup_logging, get_cred_dir, drop_pid, credmon_incompl
 import signal
 import sys
 from functools import partial
-from multiprocessing import Queue, Process
+from multiprocessing import Process
+import multiprocessing
+import Queue
 from optparse import OptionParser, OptionGroup
 import logging
 
@@ -58,7 +60,7 @@ def main():
     create_credentials()
 
     # create queue to end alerts to child to renew
-    send_queue = Queue()
+    send_queue = multiprocessing.Queue()
 
     # catch signals
     signal.signal(signal.SIGHUP, partial(signal_handler, logger, send_queue))
