@@ -36,7 +36,7 @@ def signal_handler(logger, send_queue, signum, frame):
     """
     if signum == signal.SIGHUP:
         logger.info('Got SIGHUP: Triggering READ of Credential Directory')
-        send_queue.put(True)
+        send_queue.put(True, False)
         return
     exit_msg = 'Got signal {0} at frame {1} terminating.'
     logger.info(exit_msg.format(signum, frame))
