@@ -2,3 +2,4 @@ recursive-include credmon/CredentialMonitors/OAuthCredmonWebserver/static *
 recursive-include credmon/CredentialMonitors/OAuthCredmonWebserver/templates *
 recursive-include examples *
 include README.md
+include LICENSE
