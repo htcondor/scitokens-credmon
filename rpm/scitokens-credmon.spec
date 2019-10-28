@@ -10,7 +10,7 @@ URL:            https://github.com/htcondor/scitokens-credmon
 Source0:        %{pypi_name}-%{version}.tar.gz
 BuildArch:      noarch
  
-BuildRequires:  python2-devel
+BuildRequires:  python2-devel >= 2.7
 BuildRequires:  python2-setuptools
 
 %description
