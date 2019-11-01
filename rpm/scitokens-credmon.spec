@@ -1,6 +1,6 @@
 %global pypi_name scitokens-credmon
 
-Name:           python-%{pypi_name}
+Name:           %{pypi_name}
 Version:        0.4
 Release:        1%{?dist}
 Summary:        SciTokens credential monitor for use with HTCondor
