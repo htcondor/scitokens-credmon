@@ -11,6 +11,11 @@ import glob
 import tempfile
 import re
 
+try:
+    import htcondor
+except ImportError:
+    htcondor = None
+
 class OAuthCredmon(AbstractCredentialMonitor):
 
     use_token_metadata = True
@@ -60,6 +65,29 @@ class OAuthCredmon(AbstractCredentialMonitor):
             return True
 
         return False
+
+    def should_delete(self, username, token_name):
+
+        mark_path = os.path.join(self.cred_dir, username, token_name + '.mark')
+
+        # check if mark file exists
+        if os.path.exists(mark_path):
+            try:
+                mtime = os.stat(mark_path).st_mtime
+            except OSError as e:
+                self.log.error('Could not stat %s', mark_path)
+                return False
+
+            # if mark file is older than 24 hours (or OAUTH_CREDMON_TOKEN_LIFETIME if defined), delete tokens
+            self.log.debug('Mark file is %d seconds old', int(time.time() - mtime))
+            if htcondor is not None and 'OAUTH_CREDMON_TOKEN_LIFETIME' in htcondor.param:
+                if time.time() - mtime > int(htcondor.param['OAUTH_CREDMON_TOKEN_LIFETIME']):
+                    return True
+            elif time.time() - mtime > 24*60*60:
+                return True
+
+        return False
+
 
     def refresh_access_token(self, username, token_name):
         if OAuth2Session is None:
@@ -119,13 +147,38 @@ class OAuthCredmon(AbstractCredentialMonitor):
         else:
             return True
 
+    def delete_tokens(self, username, token_name):
+        exts = ['.top', '.use', '.meta', '.mark']
+        base_path = os.path.join(self.cred_dir, username, token_name)
+
+        success = True
+        for ext in exts:
+            if os.path.exists(base_path + ext):
+                try:
+                    os.unlink(base_path + ext)
+                except OSError as e:
+                    self.log.debug('Could not remove %s: %s', base_path + ext, e.strerror)
+                    success = False
+            else:
+                self.log.debug('Could not find %s', base_path + ext)
+        return success
+
+
     def check_access_token(self, access_token_path):
 
         (basename, token_filename) = os.path.split(access_token_path)
         (cred_dir, username) = os.path.split(basename)
         token_name = os.path.splitext(token_filename)[0] # strip .use
 
-        if self.should_renew(username, token_name):
+        if self.should_delete(username, token_name):
+            self.log.info('%s tokens for user %s are marked for deletion', token_name, username)
+            success = self.delete_tokens(username, token_name)
+            if success:
+                self.log.info('Successfully deleted %s token files for user %s', token_name, username)
+            else:
+                self.log.error('Failed to delete all %s token files for user %s', token_name, username)
+
+        elif self.should_renew(username, token_name):
             self.log.info('Refreshing %s tokens for user %s', token_name, username)
             success = self.refresh_access_token(username, token_name)
             if success:
