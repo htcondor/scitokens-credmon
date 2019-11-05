@@ -15,6 +15,13 @@ tokens with users' jobs as requested by the user.
 * HTTPS-enabled web server (Apache, nginx, etc.)
 * WSGI server (mod_wsgi, uWSGI, gunicorn, etc.)
 
+### Docker Container
+
+This repository provides a Docker image for users who want to experiment
+with a personal HTCondor install with the Scitokens Credmon installed. 
+For details, see the [instructions for using the Docker
+container](#docker-container-setup) below.
+
 ## Installation
 
 To install the Scitokens CredMon, you can either use `pip` to install
@@ -165,3 +172,36 @@ SEC_CREDENTIAL_PRODUCER = /usr/bin/scitokens_credential_producer
 # Each key must have a name that relying parties can look up; defaults to "local"
 # LOCAL_CREDMON_KEY_ID = key-es356
 ```
+
+(#docker-continer-setup)
+
+We assume that this container is running with the hostname `schedd.client.address`
+Register the client with a Scitokens server. When registering this client, the callback URL should be
+```
+https://schedd.client.address:443/return/scitokens
+```
+
+Record the values of client ID and client secret provided by the server and use them to set the build arguments below.
+
+## Build the Docker image
+
+Obtain an X509 host certificate and key pair and put them in the directory
+`docker` in this repository. Then build the image with:
+```
+docker build \
+  --build-arg SCITOKENS_CLIENT_ID='myproxy:oa4mp,2012:/client_id/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' \
+  --build-arg SCITOKENS_CLIENT_SECRET='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' \
+  --build-arg SCITOKENS_AUTHORIZATION_URL=https://scitokens.server.address:443/scitokens-server/authorize \
+  --build-arg SCITOKENS_TOKEN_URL=https://scitokens.server.address:443/scitokens-server/token \
+  --build-arg SCITOKENS_USER_URL=https://scitokens.server.address:443/scitokens-server/userinfo \
+  --rm -t scitokens/htcondor-submit .
+```
+
+## Run the Docker image
+
+Edit `docker-compose.yml` to set the `hostname` and `domainname` to be the name of the machine on which this container will run so that it is visible from the outside world.
+
+```
+docker-compose up --detach
+```
+
