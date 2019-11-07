@@ -81,6 +81,8 @@ RUN sed s+__CLIENT_ID__+${SCITOKENS_CLIENT_ID}+g /etc/condor/config.d/60-oauth-t
     chmod 600 /etc/condor/.secrets/scitokens
 
 COPY docker/test.sub /home/${SUBMIT_USER}/test.sub
+COPY docker/test.sh /home/${SUBMIT_USER}/test.sh
 RUN chown ${UID}:${GID} /home/${SUBMIT_USER}/test.sub
+RUN chown ${UID}:${GID} /home/${SUBMIT_USER}/test.sh
 
 CMD ["/usr/sbin/init"]

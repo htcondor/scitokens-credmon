@@ -4,7 +4,7 @@ output = scitokens_test.$(cluster).$(process).out
 error = scitokens_test.$(cluster).$(process).err
 log = scitokens_test.$(cluster).log
 
-executable = /usr/bin/env
+executable = test.sh
 
 use_oauth_services = scitokens
 
