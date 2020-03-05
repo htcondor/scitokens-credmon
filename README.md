@@ -33,7 +33,7 @@ Or you can grab and install an RPM from our
 [releases](../../releases).
 
 The RPM includes example configuration and submit files under
-`/usr/share/doc/python2-scitokens-credmon-%{version}/`.
+`/usr/share/doc/scitokens-credmon-%{version}/`.
 
 ### Note about the credential directory
 
