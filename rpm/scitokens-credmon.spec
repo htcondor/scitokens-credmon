@@ -1,7 +1,7 @@
 %global pypi_name scitokens-credmon
 
 Name:           %{pypi_name}
-Version:        0.4
+Version:        0.5
 Release:        1%{?dist}
 Summary:        SciTokens credential monitor for use with HTCondor
 
@@ -61,6 +61,9 @@ rmdir examples/wsgi
 %{_var}/www/wsgi-scripts/scitokens-credmon
 
 %changelog
+* Thu Mar 05 2020 Jason Patton <jpatton@cs.wisc.edu> - 0.5-1
+- Change token deletion behavior.
+
 * Tue Oct 08 2019 Jason Patton <jpatton@cs.wisc.edu> - 0.4-1
 - Move configuration into examples directory.
 
