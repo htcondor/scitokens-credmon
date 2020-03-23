@@ -29,6 +29,8 @@ class LocalCredmon(OAuthCredmon):
                 with open(self._private_key_location, 'r') as private_key:
                     self._private_key = private_key.read()
                 self._private_key_id = htcondor.param.get('LOCAL_CREDMON_KEY_ID', "local")
+            else:
+                self.log.error("LOCAL_CREDMON_PRIVATE_KEY specified, but not key not found or not readable")
             self.provider = htcondor.param.get("LOCAL_CREDMON_PROVIDER_NAME", "scitokens")
             self.token_issuer = htcondor.param.get("LOCAL_CREDMON_ISSUER", self.token_issuer)
             self.authz_template = htcondor.param.get("LOCAL_CREDMON_AUTHZ_TEMPLATE", self.authz_template)
