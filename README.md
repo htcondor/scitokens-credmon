@@ -10,7 +10,7 @@ tokens with users' jobs as requested by the user.
 
 ### Prerequisites
 
-* HTCondor 8.8.1+
+* HTCondor 8.9.7+
 * Python 2.7+
 * HTTPS-enabled web server (Apache, nginx, etc.)
 * WSGI server (mod_wsgi, uWSGI, gunicorn, etc.)
