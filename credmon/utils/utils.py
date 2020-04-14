@@ -99,14 +99,17 @@ def setup_logging(log_path = None, log_level = None):
     '''
 
     # Get the log path
-    if (log_path is None) and (htcondor is not None) and ('SEC_CREDENTIAL_MONITOR_LOG' in htcondor.param):
-        log_path = htcondor.param['SEC_CREDENTIAL_MONITOR_LOG']
+    if (log_path is None) and (htcondor is not None) and (
+            ('SEC_CREDENTIAL_MONITOR_LOG' in htcondor.param) or
+            ('SEC_CREDENTIAL_MONITOR_OAUTH_LOG' in htcondor.param)
+            ):
+        log_path = htcondor.param.get('SEC_CREDENTIAL_MONITOR_OAUTH_LOG', htcondor.param.get('SEC_CREDENTIAL_MONITOR_LOG'))
     elif (log_path is None):
-        raise RuntimeError('The log file path must be specified in condor_config as SEC_CREDENTIAL_MONITOR_LOG or passed as an argument')
+        raise RuntimeError('The log file path must be specified in condor_config as SEC_CREDENTIAL_MONITOR[_OAUTH]_LOG or passed as an argument')
 
     # Get the log level
-    if (log_level is None) and (htcondor is not None) and ('SEC_CREDENTIAL_MONITOR_LOG_LEVEL' in htcondor.param):
-        log_level = logging.getLevelName(htcondor.param['SEC_CREDENTIAL_MONITOR_LOG_LEVEL'])
+    if (log_level is None) and (htcondor is not None) and ('SEC_CREDENTIAL_MONITOR_OAUTH_LOG_LEVEL' in htcondor.param):
+        log_level = logging.getLevelName(htcondor.param['SEC_CREDENTIAL_MONITOR_OAUTH_LOG_LEVEL'])
     if log_level is None:
         log_level = logging.INFO
 
@@ -150,12 +153,15 @@ def get_cred_dir(cred_dir = None):
     '''
 
     # Get the location of the credential directory
-    if (cred_dir is None) and (htcondor is not None) and ('SEC_CREDENTIAL_DIRECTORY' in htcondor.param):
-        cred_dir = htcondor.param['SEC_CREDENTIAL_DIRECTORY']
+    if (cred_dir is None) and (htcondor is not None) and (
+            ('SEC_CREDENTIAL_DIRECTORY' in htcondor.param) or
+            ('SEC_CREDENTIAL_DIRECTORY_OAUTH' in htcondor.param)
+            ):
+        cred_dir = htcondor.param.get('SEC_CREDENTIAL_DIRECTORY_OAUTH', htcondor.param.get('SEC_CREDENTIAL_DIRECTORY'))
     elif cred_dir is not None:
         pass
     else:
-        raise RuntimeError('The credential directory must be specified in condor_config as SEC_CREDENTIAL_DIRECTORY or passed as an argument')
+        raise RuntimeError('The credential directory must be specified in condor_config as SEC_CREDENTIAL_DIRECTORY[_OAUTH] or passed as an argument')
 
     # Create the credential directory if it doesn't exist
     if not os.path.exists(cred_dir):
@@ -257,7 +263,10 @@ def generate_secret_key():
         logger.warning("HTCondor module is missing will use a non-persistent WSGI session key")
         return os.urandom(16)
 
-    keyfile = os.path.join(htcondor.param.get("SEC_CREDENTIAL_DIRECTORY", "/var/lib/condor/credentials"), "wsgi_session_key")
+    cred_dir = htcondor.param.get("SEC_CREDENTIAL_DIRECTORY_OAUTH",
+                    htcondor.param.get("SEC_CREDENTIAL_DIRECTORY",
+                        "/var/lib/condor/credentials/oauth"))
+    keyfile = os.path.join(cred_dir, "wsgi_session_key")
 
     # Create the secret key file, if possible, with read-only permissions, if it doesn't exist
     try:

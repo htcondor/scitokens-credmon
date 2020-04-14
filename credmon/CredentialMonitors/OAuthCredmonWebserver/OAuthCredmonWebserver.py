@@ -3,7 +3,7 @@ from flask import Flask, request, redirect, render_template, session, url_for, j
 from requests_oauthlib import OAuth2Session
 import os
 import tempfile
-from credmon.utils import atomic_rename, get_cred_dir
+from credmon.utils import atomic_rename, get_cred_dir, api_endpoints
 import htcondor
 import classad
 import json
@@ -263,12 +263,15 @@ def oauth_return(provider):
     print('Got {0} token for user {1}'.format(provider, session['local_username']))
 
     # get user info if available
-    # todo: make this more generic
     try:
-        get_user_info = oauth.get(provider_ad['UserUrl'])
-        user_info = get_user_info.json()
-        if 'login' in user_info: # box
-            session['providers'][provider]['username'] = user_info['login']
+        (user_url, user_field_keys) = api_endpoints.user(provider_ad['TokenUrl'])
+        if user_url is not None:
+            get_user_info = oauth.get(user_url)
+            user_info = get_user_info.json()
+            for user_field in user_field_keys:
+                username = user_info[user_field]
+            username = str(username)
+            session['providers'][provider]['username'] = username
         elif 'sub' in user_info: # scitokens/jwt
             session['providers'][provider]['username'] = user_info['sub']
         else:

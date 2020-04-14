@@ -38,17 +38,17 @@ The RPM includes example configuration and submit files under
 ### Note about the credential directory
 
 If you are not installing using the RPM, the credential directory
-(`SEC_CREDENTIAL_DIRECTORY = /var/lib/condor/credentials` in the
+(`SEC_CREDENTIAL_DIRECTORY_OAUTH = /var/lib/condor/credentials/oauth` in the
 example config file) should be owned by the group condor with the
 SetGID bit set and group write permissions:
 ```
-mkdir -p /var/lib/condor/credentials
-chgrp condor /var/lib/condor/credentials
-chmod 2770 /var/lib/condor/credentials
+mkdir -p /var/lib/condor/credentials/oauth
+chgrp condor /var/lib/condor/credentials/oauth
+chmod 2770 /var/lib/condor/credentials/oauth
 ```
 ```
-# ls -ld /var/lib/condor/credentials
-drwxrws--- 3 root condor 4096 May  8 10:05 /var/lib/condor/credentials
+# ls -ld /var/lib/condor/credentials/oauth
+drwxrws--- 3 root condor 4096 May  8 10:05 /var/lib/condor/credentials/oauth
 ```
 
 ### Note about daemon-to-daemon encryption
@@ -108,7 +108,7 @@ Users that request tokens will be directed to a URL on the submit host
 containing a unique key. The Flask app will use this key to generate
 and present a list of token providers and links to log in to each
 provider. Tokens returned from the providers will be stored in the
-`SEC_CREDENTIAL_DIRECTORY` under the users' local usernames, and all
+`SEC_CREDENTIAL_DIRECTORY_OAUTH` under the users' local usernames, and all
 tokens will be monitored and refreshed as necessary by the OAuth
 CredMon.
 

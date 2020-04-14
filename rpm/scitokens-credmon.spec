@@ -1,7 +1,7 @@
 %global pypi_name scitokens-credmon
 
 Name:           %{pypi_name}
-Version:        0.5
+Version:        0.6
 Release:        1%{?dist}
 Summary:        SciTokens credential monitor for use with HTCondor
 
@@ -26,6 +26,7 @@ Requires:       python-six
 Requires:       python-flask
 Requires:       python2-cryptography
 Requires:       python2-scitokens
+Requires:       condor >= 8.9.7
 Requires:       httpd
 Requires:       mod_wsgi
 
@@ -42,25 +43,28 @@ rm -rf %{pypi_name}.egg-info
 
 %install
 %py2_install
-mkdir -p %{buildroot}/%{_var}/lib/condor/credentials
-mv examples/config/README.credentials %{buildroot}/%{_var}/lib/condor/credentials
+mkdir -p %{buildroot}/%{_var}/lib/condor/credentials/oauth
+mv examples/config/README.credentials %{buildroot}/%{_var}/lib/condor/credentials/oauth
 mkdir -p %{buildroot}/%{_var}/www/wsgi-scripts/scitokens-credmon
 mv examples/wsgi/scitokens-credmon.wsgi %{buildroot}/%{_var}/www/wsgi-scripts/scitokens-credmon/scitokens-credmon.wsgi
 rmdir examples/wsgi
 
 %files -n python2-%{pypi_name}
 %doc LICENSE README.md examples
-%{_bindir}/scitokens_credmon
+%{_bindir}/condor_credmon_oauth
 %{_bindir}/scitokens_credential_producer
 %{python2_sitelib}/credmon
 %{python2_sitelib}/scitokens_credmon-*.egg-info
-%attr(2770, root, condor) %{_var}/lib/condor/credentials
-%ghost %{_var}/lib/condor/credentials/wsgi_session_key
-%ghost %{_var}/lib/condor/credentials/CREDMON_COMPLETE
-%ghost %{_var}/lib/condor/credentials/pid
+%{_var}/lib/condor/credentials/oauth/README.credentials
+%ghost %{_var}/lib/condor/credentials/oauth/wsgi_session_key
+%ghost %{_var}/lib/condor/credentials/oauth/CREDMON_COMPLETE
+%ghost %{_var}/lib/condor/credentials/oauth/pid
 %{_var}/www/wsgi-scripts/scitokens-credmon
 
 %changelog
+* Tue Mar 31 2020 Jason Patton <jpatton@cs.wisc.edu> - 0.6-1
+- Conform to new HTCondor OAuth config behavior
+
 * Thu Mar 05 2020 Jason Patton <jpatton@cs.wisc.edu> - 0.5-1
 - Change token deletion behavior.
 

@@ -1,4 +1,4 @@
-htcondor
+htcondor>=8.9.7
 requests_oauthlib==1.0.0
 six
 flask
