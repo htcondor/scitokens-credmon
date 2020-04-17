@@ -10,7 +10,7 @@ tokens with users' jobs as requested by the user.
 
 ### Prerequisites
 
-* HTCondor 8.9.7+
+* HTCondor 8.8.2+
 * Python 2.7+
 * HTTPS-enabled web server (Apache, nginx, etc.)
 * WSGI server (mod_wsgi, uWSGI, gunicorn, etc.)
@@ -38,17 +38,17 @@ The RPM includes example configuration and submit files under
 ### Note about the credential directory
 
 If you are not installing using the RPM, the credential directory
-(`SEC_CREDENTIAL_DIRECTORY_OAUTH = /var/lib/condor/credentials/oauth` in the
+(`SEC_CREDENTIAL_DIRECTORY_OAUTH = /var/lib/condor/oauth_credentials` in the
 example config file) should be owned by the group condor with the
 SetGID bit set and group write permissions:
 ```
-mkdir -p /var/lib/condor/credentials/oauth
-chgrp condor /var/lib/condor/credentials/oauth
-chmod 2770 /var/lib/condor/credentials/oauth
+mkdir -p /var/lib/condor/oauth_credentials
+chgrp condor /var/lib/condor/oauth_credentials
+chmod 2770 /var/lib/condor/oauth_credentials
 ```
 ```
-# ls -ld /var/lib/condor/credentials/oauth
-drwxrws--- 3 root condor 4096 May  8 10:05 /var/lib/condor/credentials/oauth
+# ls -ld /var/lib/condor/oauth_credentials
+drwxrws--- 3 root condor 4096 May  8 10:05 /var/lib/condor/oauth_credentials
 ```
 
 ### Note about daemon-to-daemon encryption
