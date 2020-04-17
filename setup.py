@@ -13,7 +13,7 @@ setup(
     packages = find_packages(),
     scripts = ['bin/condor_credmon_oauth', 'bin/scitokens_credential_producer'],
     install_requires = [
-        'htcondor >= 8.9.7',
+        'htcondor >= 8.8.2',
         'requests_oauthlib==1.0.0',
         'six',
         'flask',

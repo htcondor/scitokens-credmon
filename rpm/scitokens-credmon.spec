@@ -26,7 +26,7 @@ Requires:       python-six
 Requires:       python-flask
 Requires:       python2-cryptography
 Requires:       python2-scitokens
-Requires:       condor >= 8.9.7
+Requires:       condor >= 8.8.2
 Requires:       httpd
 Requires:       mod_wsgi
 
@@ -43,8 +43,8 @@ rm -rf %{pypi_name}.egg-info
 
 %install
 %py2_install
-mkdir -p %{buildroot}/%{_var}/lib/condor/credentials/oauth
-mv examples/config/README.credentials %{buildroot}/%{_var}/lib/condor/credentials/oauth
+mkdir -p %{buildroot}/%{_var}/lib/condor/oauth_credentials
+mv examples/config/README.credentials %{buildroot}/%{_var}/lib/condor/oauth_credentials
 mkdir -p %{buildroot}/%{_var}/www/wsgi-scripts/scitokens-credmon
 mv examples/wsgi/scitokens-credmon.wsgi %{buildroot}/%{_var}/www/wsgi-scripts/scitokens-credmon/scitokens-credmon.wsgi
 rmdir examples/wsgi
@@ -55,10 +55,10 @@ rmdir examples/wsgi
 %{_bindir}/scitokens_credential_producer
 %{python2_sitelib}/credmon
 %{python2_sitelib}/scitokens_credmon-*.egg-info
-%{_var}/lib/condor/credentials/oauth/README.credentials
-%ghost %{_var}/lib/condor/credentials/oauth/wsgi_session_key
-%ghost %{_var}/lib/condor/credentials/oauth/CREDMON_COMPLETE
-%ghost %{_var}/lib/condor/credentials/oauth/pid
+%{_var}/lib/condor/oauth_credentials/README.credentials
+%ghost %{_var}/lib/condor/oauth_credentials/wsgi_session_key
+%ghost %{_var}/lib/condor/oauth_credentials/CREDMON_COMPLETE
+%ghost %{_var}/lib/condor/oauth_credentials/pid
 %{_var}/www/wsgi-scripts/scitokens-credmon
 
 %changelog
