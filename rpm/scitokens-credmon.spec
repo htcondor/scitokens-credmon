@@ -43,6 +43,7 @@ rm -rf %{pypi_name}.egg-info
 
 %install
 %py2_install
+ln -s %{_bindir}/condor_credmon_oauth %{buildroot}/%{_bindir}/scitokens_credmon
 mkdir -p %{buildroot}/%{_var}/lib/condor/oauth_credentials
 mv examples/config/README.credentials %{buildroot}/%{_var}/lib/condor/oauth_credentials
 mkdir -p %{buildroot}/%{_var}/www/wsgi-scripts/scitokens-credmon
@@ -52,6 +53,7 @@ rmdir examples/wsgi
 %files -n python2-%{pypi_name}
 %doc LICENSE README.md examples
 %{_bindir}/condor_credmon_oauth
+%{_bindir}/scitokens_credmon
 %{_bindir}/scitokens_credential_producer
 %{python2_sitelib}/credmon
 %{python2_sitelib}/scitokens_credmon-*.egg-info
