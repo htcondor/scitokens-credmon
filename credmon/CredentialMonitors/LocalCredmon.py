@@ -15,7 +15,7 @@ class LocalCredmon(OAuthCredmon):
     a copy of the private signing key.
     """
 
-    use_token_metadata = True
+    use_token_metadata = False
 
     def __init__(self, *args, **kwargs):
         super(LocalCredmon, self).__init__(*args, **kwargs)

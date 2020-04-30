@@ -2,7 +2,7 @@ from credmon.CredentialMonitors.AbstractCredentialMonitor import AbstractCredent
 from credmon.utils import atomic_rename
 try:
     from requests_oauthlib import OAuth2Session
-except:
+except ImportError:
     OAuth2Session = None
 import os
 import time
@@ -169,6 +169,12 @@ class OAuthCredmon(AbstractCredentialMonitor):
         (basename, token_filename) = os.path.split(access_token_path)
         (cred_dir, username) = os.path.split(basename)
         token_name = os.path.splitext(token_filename)[0] # strip .use
+
+        # OAuthCredmon only handles OAuth access tokens, which must have metadata files
+        metadata_path = os.path.join(self.cred_dir, username, token_name + '.meta')
+        if not os.path.exists(metadata_path):
+            self.log.debug('Skipping check of %s token files for user %s, no metadata found', token_name, username)
+            return
 
         if self.should_delete(username, token_name):
             self.log.info('%s tokens for user %s are marked for deletion', token_name, username)

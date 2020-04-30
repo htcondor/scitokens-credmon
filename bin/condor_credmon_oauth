@@ -64,8 +64,8 @@ def main():
         for credmon in credmons:
             try:
                 credmon.scan_tokens()
-            except Exception as e:
-                logger.exception(e)
+            except Exception:
+                logger.exception("Fatal error while scanning for tokens")
         credmon_complete(cred_dir)
         logger.info('Sleeping for 60 seconds')
         sleeper.clear()
