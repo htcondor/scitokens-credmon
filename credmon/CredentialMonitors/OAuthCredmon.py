@@ -1,5 +1,5 @@
 from credmon.CredentialMonitors.AbstractCredentialMonitor import AbstractCredentialMonitor
-from credmon.utils import atomic_rename
+from credmon.utils import atomic_rename, api_endpoints
 try:
     from requests_oauthlib import OAuth2Session
 except ImportError:
@@ -56,11 +56,12 @@ class OAuthCredmon(AbstractCredentialMonitor):
                     if token_metadata['use_refresh_token'] == False:
                         return False
 
-        # get token half-life
+        # compute token refresh time
         create_time = os.path.getctime(access_token_path)
-        refresh_time = create_time + float(access_token['expires_in'])/2
+        refresh_time = create_time + (float(access_token['expires_in']) *
+            api_endpoints.token_lifetime_fraction(token_metadata['token_url']))
 
-        # check if token is past its half-life
+        # check if token is past its refresh time
         if time.time() > refresh_time:
             return True
 
@@ -78,10 +79,10 @@ class OAuthCredmon(AbstractCredentialMonitor):
                 self.log.error('Could not stat %s', mark_path)
                 return False
 
-            # if mark file is older than 24 hours (or OAUTH_CREDMON_TOKEN_LIFETIME if defined), delete tokens
+            # if mark file is older than 24 hours (or CREDMON_OAUTH_TOKEN_LIFETIME if defined), delete tokens
             self.log.debug('Mark file is %d seconds old', int(time.time() - mtime))
-            if htcondor is not None and 'OAUTH_CREDMON_TOKEN_LIFETIME' in htcondor.param:
-                if time.time() - mtime > int(htcondor.param['OAUTH_CREDMON_TOKEN_LIFETIME']):
+            if htcondor is not None and 'CREDMON_OAUTH_TOKEN_LIFETIME' in htcondor.param:
+                if time.time() - mtime > int(htcondor.param['CREDMON_OAUTH_TOKEN_LIFETIME']):
                     return True
             elif time.time() - mtime > 24*60*60:
                 return True

@@ -16,9 +16,6 @@ def get_token_name(token_url):
 
 def user(token_url):
     '''Returns the URL and fields to query for user info'''
-    token = get_token_name(token_url)
-    if token is None:
-        return (None, None)
 
     url = {
         'box':          'https://api.box.com/2.0/users/me',
@@ -34,4 +31,23 @@ def user(token_url):
         'dropbox':      ['email'],
     }
 
+    token = get_token_name(token_url)
+    if (token is None) or not ((token in url) and (token in field)):
+        return (None, None)
+
     return (url[token], field[token])
+
+def token_lifetime_fraction(token_url):
+    '''Returns the fraction of an access token's lifetime at
+    which point it should be refreshed. Default is 0.5 (the
+    token's "halflife").'''
+
+    lifetime = {
+        'box': 0.95,
+    }
+
+    token = get_token_name(token_url)
+    if (token is None) or not (token in lifetime):
+        return 0.5
+
+    return lifetime[token]
