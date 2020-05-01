@@ -272,8 +272,10 @@ def oauth_return(provider):
                 username = user_info[user_field]
             username = str(username)
             session['providers'][provider]['username'] = username
-        elif 'sub' in user_info: # scitokens/jwt
-            session['providers'][provider]['username'] = user_info['sub']
+        elif 'sub' in token: # scitokens/jwt
+            session['providers'][provider]['username'] = token['sub']
+        elif 'name' in token: # scitokens/jwt
+            session['providers'][provider]['username'] = token['name']
         else:
             session['providers'][provider]['username'] = 'Unknown'
     except ValueError:
