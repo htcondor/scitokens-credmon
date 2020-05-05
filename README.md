@@ -18,32 +18,45 @@ tokens with users' jobs as requested by the user.
 ### Docker Container
 
 This repository provides a Docker image for users who want to experiment
-with a personal HTCondor install with the Scitokens Credmon installed. 
+with a personal HTCondor install with the Scitokens CredMon installed.
 For details, see the [instructions for using the Docker
 container](#docker-container-setup) below.
 
 ## Installation
 
-To install the Scitokens CredMon, you can either use `pip` to install
-the latest version in PyPI:
+On a RHEL-based Linux distributions (RHEL7 only at this time), we
+recommend installing the Scitokens CredMon by first
+[installing and enabling an OSG 3.5+ yum repository](https://opensciencegrid.org/docs/common/yum/),
+and then using `yum` to install the CredMon:
+```sh
+yum install python2-scitokens-credmon
+```
+Or you can grab and install the latest RPM
+[from our GitHub releases](../../releases).
+
+If you use yum or an RPM, example configuration and submit files will
+be stored under
+`/usr/share/doc/python2-scitokens-credmon-%{version}/`.
+
+For other distributions, you can use `pip` to install the latest
+version from PyPI and refer to
+[example configuration and submit files](examples) from the GitHub
+repository:
 ```sh
 pip install scitokens-credmon
 ```
-Or you can grab and install an RPM from our
-[releases](../../releases).
-
-The RPM includes example configuration and submit files under
-`/usr/share/doc/python2-scitokens-credmon-%{version}/`.
+Be sure to read the note below about the credential directory.
 
 ### Note about the credential directory
 
-If you are not installing using the RPM, the credential directory
-(`SEC_CREDENTIAL_DIRECTORY_OAUTH = /var/lib/condor/oauth_credentials` in the
-example config file) should be owned by the group condor with the
-SetGID bit set and group write permissions:
-```
+If you are installing the CredMon using `pip`, the credential directory
+(`SEC_CREDENTIAL_DIRECTORY_OAUTH = /var/lib/condor/oauth_credentials`
+in the example config file) may need to be manually created and should
+be owned by the group condor with the SetGID bit set and group write
+permissions:
+```sh
 mkdir -p /var/lib/condor/oauth_credentials
-chgrp condor /var/lib/condor/oauth_credentials
+chown root:condor /var/lib/condor/oauth_credentials
 chmod 2770 /var/lib/condor/oauth_credentials
 ```
 ```
@@ -69,10 +82,12 @@ configuration:
 
 1. See the
 [example Apache scitokens_credmon.conf config file](examples/config/apache/scitokens_credmon.conf)
-for configuring the OAuth2 Token Flask app. The config must point to a WSGI
-script that imports and runs the Flask app. If you installed via the
-RPM, this will be created for you, otherwise we recommend using the 
+for configuring the OAuth2 Token Flask app. The config must point to a
+WSGI script that imports and runs the Flask app. If you installed the
+CredMon using `pip`, you should use the
 [example scitokens-credmon.wsgi script](examples/wsgi/scitokens-credmon.wsgi).
+RPM-based installs automatically place this script under
+`/var/www/wsgi-scripts/scitokens-credmon`.
 
 2. See the
 [example HTCondor 50-scitokens-credmon.conf config file](examples/config/condor/50-scitokens-credmon.conf)
@@ -90,7 +105,7 @@ For each provider:
     * You should configure the return URL in your application's settings
     as `https://<submit_hostname>/return/<provider>`.
     * Consult the OAuth2 provider's API documentation to obtain the
-    authorization, token, and user URLs.
+    authorization and token endpoint URLs.
 
 The HTCondor OAuth2 token configuration parameters are:
 ```
@@ -99,7 +114,6 @@ The HTCondor OAuth2 token configuration parameters are:
 <PROVIDER>_RETURN_URL_SUFFIX   The return URL endpoint for your Flask app ("/return/<provider>")
 <PROVIDER>_AUTHORIZATION_URL   The authorization URL for the OAuth2 provider
 <PROVIDER>_TOKEN_URL           The token URL for the OAuth2 provider
-<PROVIDER>_USER_URL            The user API endpoint URL for the OAuth2 provider
 ```
 Multiple OAuth2 clients can be configured as long as unique names are
 used for each `<PROVIDER>`.
@@ -120,8 +134,7 @@ A comma-delimited list of requested OAuth service providers, which
 must match (case-insensitive) the <PROVIDER> names in the submit host
 config.
 
-`<PROVIDER>_oauth_permissions(_<HANDLE>) = <scope1, scope2, scope3,
-...>`
+`<PROVIDER>_oauth_permissions(_<HANDLE>) = <scope1, scope2, scope3, ...>`
 
 A comma-delimited list of requested scopes for the token provided by
 <PROVIDER>. This command is optional if the OAuth provider does not
@@ -143,7 +156,7 @@ See [examples/submit](examples/submit) for examples of submit files.
 
 ## Local Credmon Mode
 
-In the "local mode", the credmon will use a provided private key to sign a SciToken
+In the "local mode", the credmon will use a provided private key to sign a Scitoken
 directly, bypassing any OAuth callout.  This is useful in the case where the admin
 wants a less-complex setup than a full OAuth deployment.
 
