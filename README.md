@@ -39,11 +39,11 @@ be stored under
 `/usr/share/doc/python2-scitokens-credmon-%{version}/`.
 
 For other distributions, you can use `pip` to install the latest
-version from PyPI and refer to
-[example configuration and submit files](examples) from the GitHub
+version from GitHub and refer to the
+[example configuration and submit files](examples) inside the GitHub
 repository:
 ```sh
-pip install scitokens-credmon
+pip install git+https://github.com/htcondor/scitokens-credmon
 ```
 Be sure to read the note below about the credential directory.
 
