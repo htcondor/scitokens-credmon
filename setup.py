@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='scitokens-credmon',
-    version = '0.6',
+    version = '0.7',
     description = 'SciTokens credential monitor for use with HTCondor',
     long_description = open('README.md').read(),
     long_description_content_type = "text/markdown",
