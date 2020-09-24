@@ -79,7 +79,8 @@ class LocalCredmon(OAuthCredmon):
         if htcondor.param.get("LOCAL_CREDMON_KRB_MODE", False):
             base = os.path.splitext(cred_fname)[0]
             if not os.path.isdir(base):
-                os.makedirs(base, mode=0o2775)
+                os.makedirs(base)
+                os.chmod(base, 0o2775)
         else:
             base, _ = os.path.split(cred_fname)
         username = os.path.basename(base)
