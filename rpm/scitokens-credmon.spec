@@ -1,7 +1,7 @@
 %global pypi_name scitokens-credmon
 
 Name:           %{pypi_name}
-Version:        0.7
+Version:        0.8
 Release:        1%{?dist}
 Summary:        SciTokens credential monitor for use with HTCondor
 
@@ -64,6 +64,12 @@ rmdir examples/wsgi
 %{_var}/www/wsgi-scripts/scitokens-credmon
 
 %changelog
+* Thu Sep 24 2020 Jason Patton <jpatton@cs.wisc.edu> - 0.8-1
+- Python 3 compatibility
+- Credmon subprocess returns on parent exit
+- condor_who now reports credmon as Ready
+- Local issuer no longer refreshes tokens every loop
+
 * Mon Jun 01 2020 Jason Patton <jpatton@cs.wisc.edu> - 0.7-1
 - Use dweitzel\'s subprocess queuing
 
