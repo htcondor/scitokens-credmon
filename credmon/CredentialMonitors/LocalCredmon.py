@@ -53,7 +53,7 @@ class LocalCredmon(OAuthCredmon):
         # Serialize the token and write it to a file
         serialized_token = token.serialize(issuer=self.token_issuer, lifetime=int(self.token_lifetime))
 
-        oauth_response = {"access_token": serialized_token,
+        oauth_response = {"access_token": serialized_token.decode(),
                           "expires_in":   int(self.token_lifetime)}
 
         access_token_path = os.path.join(self.cred_dir, username, token_name + '.use')
@@ -78,7 +78,7 @@ class LocalCredmon(OAuthCredmon):
         base, _ = os.path.split(cred_fname)
         username = os.path.basename(base)
 
-        if self.should_renew(base, username):
+        if self.should_renew(username, self.provider):
             self.log.info('Found %s, acquiring SciToken and .use file', cred_fname)
             success = self.refresh_access_token(username, self.provider)
             if success:

@@ -1,16 +1,24 @@
 #!/usr/bin/env python
 
-from credmon.CredentialMonitors.OAuthCredmon import OAuthCredmon
-from credmon.CredentialMonitors.LocalCredmon import LocalCredmon
-from credmon.utils import setup_logging, get_cred_dir, drop_pid, credmon_incomplete, credmon_complete, create_credentials
+import os
+import time
 import signal
-import sys
 from functools import partial
 from multiprocessing import Process
 import multiprocessing
-import Queue
+try:
+    import queue as Queue
+except ImportError:
+    import Queue
 from optparse import OptionParser, OptionGroup
 import logging
+
+import htcondor
+import sys
+
+from credmon.CredentialMonitors.OAuthCredmon import OAuthCredmon
+from credmon.CredentialMonitors.LocalCredmon import LocalCredmon
+from credmon.utils import setup_logging, get_cred_dir, drop_pid, credmon_incomplete, credmon_complete, create_credentials
 
 parser = OptionParser()
 parser.add_option('-c', '--cred-dir', action='store', type='string', dest='cred_dir',
@@ -28,14 +36,16 @@ def signal_handler(logger, send_queue, signum, frame):
     """
     if signum == signal.SIGHUP:
         logger.info('Got SIGHUP: Triggering READ of Credential Directory')
-        send_queue.put(True, False)
+        send_queue.put(False, block=False)
         return
     exit_msg = 'Got signal {0} at frame {1} terminating.'
+    send_queue.put(True, block=False)
     logger.info(exit_msg.format(signum, frame))
     sys.exit(0)
 
 def main():
 
+    htcondor.set_subsystem("CREDMON_OAUTH", htcondor.SubsystemType.Daemon)
     (options, args) = parser.parse_args()
 
     cred_dir = get_cred_dir(cred_dir = options.cred_dir)
@@ -55,10 +65,22 @@ def main():
     signal.signal(signal.SIGQUIT, partial(signal_handler, logger, send_queue))
     drop_pid(cred_dir)
 
+    # start the scan tokens loop
     cred_process = Process(target=start_credmon_process, args=(send_queue,cred_dir,logger,))
     cred_process.start()
 
-    # set up scan tokens loop
+    # wait for CREDMON_COMPLETE and signal the condor_master
+    for tries in range(20*60):
+        if os.path.exists(os.path.join(cred_dir, "CREDMON_COMPLETE")):
+            try:
+                logger.info("Sending DC_SET_READY message to master")
+                htcondor.set_ready_state("Ready")
+            except Exception:
+                logger.warning("Could not send DC_SET_READY message to master")
+            break
+        time.sleep(1)
+
+    # join scan tokens loop
     cred_process.join()
 
 def start_credmon_process(q, cred_dir, logger):
@@ -80,7 +102,9 @@ def start_credmon_process(q, cred_dir, logger):
         credmon_complete(cred_dir)
         logger.info('Sleeping for 60 seconds')
         try:
-            q.get(True, 60)
+            credmon_quit = q.get(block=True, timeout=60)
+            if credmon_quit:
+                return
         except Queue.Empty as eq:
             pass
 
