@@ -2,12 +2,12 @@
 
 Name:           %{pypi_name}
 Version:        0.8
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        SciTokens credential monitor for use with HTCondor
 
 License:        MIT
 URL:            https://github.com/htcondor/scitokens-credmon
-Source0:        %{pypi_name}-%{version}.tar.gz
+Source0:        %{pypi_name}-%{version}.post1.tar.gz
 BuildArch:      noarch
  
 BuildRequires:  python2-devel >= 2.7
@@ -34,7 +34,7 @@ Requires:       mod_wsgi
 
 
 %prep
-%autosetup -n %{pypi_name}-%{version}
+%autosetup -n %{pypi_name}-%{version}.post1
 # Remove pre-built egg-info
 rm -rf %{pypi_name}.egg-info
 
@@ -64,6 +64,9 @@ rmdir examples/wsgi
 %{_var}/www/wsgi-scripts/scitokens-credmon
 
 %changelog
+* Thu Sep 24 2020 Jason Patton <jpatton@cs.wisc.edu> - 0.8-2
+- Hacks for getting local issuer working with old krb behavior.
+
 * Thu Sep 24 2020 Jason Patton <jpatton@cs.wisc.edu> - 0.8-1
 - Python 3 compatibility
 - Credmon subprocess returns on parent exit
