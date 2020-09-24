@@ -1,5 +1,6 @@
 
 import os
+import shutil
 import glob
 
 import scitokens
@@ -75,13 +76,20 @@ class LocalCredmon(OAuthCredmon):
         <cred_dir> / <username> / <provider>.top
         """
         # Take the cred_dir out of the cred_path
-        base, _ = os.path.split(cred_fname)
+        if htcondor.param.get("LOCAL_CREDMON_KRB_MODE", False):
+            base = os.path.splitext(cred_fname)[0]
+            if not os.path.isdir(base):
+                os.makedirs(base, mode=0o2755)
+        else:
+            base, _ = os.path.split(cred_fname)
         username = os.path.basename(base)
 
         if self.should_renew(username, self.provider):
             self.log.info('Found %s, acquiring SciToken and .use file', cred_fname)
             success = self.refresh_access_token(username, self.provider)
             if success:
+                if htcondor.param.get("LOCAL_CREDMON_KRB_MODE", False):
+                    shutil.copy(os.path.join(base, self.provider + '.use'), base + '.cc')
                 self.log.info("Successfully renewed SciToken for user: %s", username)
             else:
                 self.log.error("Failed to renew SciToken for user: %s", username)
@@ -96,6 +104,9 @@ class LocalCredmon(OAuthCredmon):
         """
 
         provider_glob = os.path.join(self.cred_dir, "*", "{}.top".format(self.provider))
+        if htcondor.param.get("LOCAL_CREDMON_KRB_MODE", False):
+            provider_glob = os.path.join(self.cred_dir, "*.cred")
+            self.log.info("Looking for *.cred files since LOCAL_CREDMON_KRB_MODE is set, found {} files".format(len(glob.glob(provider_glob))))
 
         for file_name in glob.glob(provider_glob):
             self.process_cred_file(file_name)
