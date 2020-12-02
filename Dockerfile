@@ -30,6 +30,7 @@ RUN curl -L -s http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor > R
     yum-config-manager --add-repo https://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-development-rhel7.repo && \
     yum clean all && \
     rm -f RPM-GPG-KEY-HTCondor && \
+    yum -y install epel-release && \
     yum -y install condor && \
     groupadd -g ${GID} ${SUBMIT_USER} && \
     useradd -m -u ${UID} -g ${GID} ${SUBMIT_USER} && \
@@ -38,7 +39,7 @@ RUN curl -L -s http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor > R
     sed -i 's/\(^Defaults.*requiretty.*\)/#\1/' /etc/sudoers && \
     systemctl enable condor
 
-RUN yum -y install epel-release httpd mod_wsgi mod_ssl net-tools vim
+RUN yum -y install httpd mod_wsgi mod_ssl net-tools vim
 RUN systemctl enable httpd
 
 COPY docker/hostkey.pem /etc/pki/tls/private/localhost.key
@@ -59,9 +60,9 @@ COPY examples/config/apache/scitokens_credmon.conf /etc/httpd/conf.d/
 COPY examples/wsgi/scitokens-credmon.wsgi /var/www/wsgi-scripts/scitokens-credmon/
 COPY docker/10-docker.conf /etc/condor/config.d/
 COPY docker/60-oauth-token-providers.conf.tmpl /etc/condor/config.d/60-oauth-token-providers.conf.tmpl
-RUN mkdir -p $(condor_config_val SEC_CREDENTIAL_DIRECTORY) && \
-    chgrp condor $(condor_config_val SEC_CREDENTIAL_DIRECTORY) && \
-    chmod 2770 $(condor_config_val SEC_CREDENTIAL_DIRECTORY)
+RUN mkdir -p $(condor_config_val SEC_CREDENTIAL_DIRECTORY_OAUTH) && \
+    chgrp condor $(condor_config_val SEC_CREDENTIAL_DIRECTORY_OAUTH) && \
+    chmod 2770 $(condor_config_val SEC_CREDENTIAL_DIRECTORY_OAUTH)
 
 ARG SCITOKENS_CLIENT_ID=clientid
 ARG SCITOKENS_CLIENT_SECRET=clientsecret
