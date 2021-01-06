@@ -99,7 +99,7 @@ docker build \
 Edit `docker-compose.yml` to set the `hostname` and `domainname` to be the name of the machine on which this container will run so that it is visible from the outside world.
 
 ```
-docker-compose up --detach
+docker-compose up -d
 ```
 
 ### Testing the CredMon with the Docker image
