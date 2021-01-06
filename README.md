@@ -106,7 +106,7 @@ docker-compose up -d
 
 The docker container has an unpriveleged user named `submitter` who can submit jobs to the schedd. To log into the container as this user, run the following command from the host:
 ```sh
-docker exec -it scitokens-credmon_scitokens-htcondor_1 /bin/su -l submitter
+docker exec -it scitokenscredmon_scitokens-htcondor_1 /bin/su -l submitter
 ```
 Once logged in, you will find a submit file names `test.sub`. Edit this file and set the arguments `scitokens_oauth_resource` to one of the audiences that the Schedd is configured to access, and set `scitokens_oauth_permissions` to a valid scope for that audience. For example, of you registered `my.host.org` as an audience with a scope template of `read:/public/**` in the SciTokens server, then
 ```
